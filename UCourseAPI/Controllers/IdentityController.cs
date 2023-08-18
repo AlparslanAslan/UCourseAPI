@@ -11,6 +11,12 @@ namespace UCourseAPI.Controllers
     public class IdentityController : Controller
     {
         public static User user = new User();
+        public readonly IConfiguration _configuration;
+
+        public IdentityController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         [HttpPost("register")]
         
@@ -38,8 +44,8 @@ namespace UCourseAPI.Controllers
             {
                 return BadRequest("Password is incorrect");
             }
-
-            return Ok();
+            var token = IdentityMethods.CreateToken(dtouser,_configuration);
+            return Ok(token);
 
 
         }
