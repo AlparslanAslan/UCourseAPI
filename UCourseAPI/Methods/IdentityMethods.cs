@@ -29,10 +29,11 @@ namespace UCourseAPI.Methods
             }
             return passwordHash.SequenceEqual(_user.PasswordHash);
         }
-        public static string CreateToken(DtoUser user,IConfiguration configuration)
+        public static string CreateToken(User user,IConfiguration configuration)
         {
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.Role,user.Role),
                 new Claim(ClaimTypes.Name,user.Name)
             };
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(

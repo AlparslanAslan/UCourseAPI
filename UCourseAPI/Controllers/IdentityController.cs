@@ -44,7 +44,9 @@ namespace UCourseAPI.Controllers
             {
                 return BadRequest("Password is incorrect");
             }
-            var token = IdentityMethods.CreateToken(dtouser,_configuration);
+            User user = IdentityData.GetUserInfo(dtouser.Name); 
+
+            var token = IdentityMethods.CreateToken(user,_configuration);
             return Ok(token);
 
 

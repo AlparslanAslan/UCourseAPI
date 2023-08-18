@@ -26,12 +26,13 @@ namespace UCourseAPI.Data
                 return dbConnection.QueryFirstOrDefault<int>(query, user);
             }
         }
+        
         public static User GetUserInfo(string name)
         {
             var parameters = new { name };
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
-                string query = @"select name,passwordhash,passwordsalt from person where name=@name ";
+                string query = @"select name,passwordhash,passwordsalt,role Role from person where name=@name ";
                 return dbConnection.QueryFirstOrDefault<User>(query, parameters);
             }
         }

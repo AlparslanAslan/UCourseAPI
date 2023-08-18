@@ -17,7 +17,7 @@ namespace UCourseAPI.Controllers
         }
         [HttpGet]
         //[ServiceFilter(typeof(ApiAuthFilter))]
-        [Authorize]
+        [Authorize(Roles ="Administrator")]
         public IEnumerable<Course> GetCourses(string? name,string? category,string? language,string? subcategory,int level,int orderby)
         {
             var dbmethode = new DBConnection();
