@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using UCourseAPI.Authentication;
 using UCourseAPI.Data;
 using UCourseAPI.Models;
 
@@ -14,6 +15,7 @@ namespace UCourseAPI.Controllers
             _logger = logger;
         }
         [HttpGet]
+        [ServiceFilter(typeof(ApiAuthFilter))]
         public IEnumerable<Course> GetCourses(string? name,string? category,string? language,string? subcategory,int level,int orderby)
         {
             var dbmethode = new DBConnection();
