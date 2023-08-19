@@ -8,14 +8,16 @@ namespace UCourseAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class IdentityController : Controller
+    public class IdentityController : ControllerBase
     {
         public static User user = new User();
         public readonly IConfiguration _configuration;
+        private readonly DBFacade _dBFacade;
 
-        public IdentityController(IConfiguration configuration)
+        public IdentityController(IConfiguration configuration,DBFacade dBFacade)
         {
             _configuration = configuration;
+            _dBFacade = dBFacade;
         }
 
         [HttpPost("register")]
@@ -27,24 +29,25 @@ namespace UCourseAPI.Controllers
             user.Name = dtouser.Name;
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
-
-            return IdentityData.UserRegister(user);
+            
+            return _dBFacade.UserRegister(user);
+            //return _dbFacade.UserRegister(user);
 
 
         }
         [HttpPost("login")]
         public IActionResult Login(DtoUser dtouser)
         {
-            if(IdentityData.IsUserExist(dtouser) != 1)
+            if(_dBFacade.IsUserExist(dtouser) != 1)
             {
                 return BadRequest("User Not Exist.");
             }
 
-            if(!IdentityMethods.IsPasswordCorrect(dtouser, out byte[] phash, out byte[] psalt ))
+            if(! IdentityMethods.IsPasswordCorrect(dtouser, out byte[] phash, out byte[] psalt ))
             {
                 return BadRequest("Password is incorrect");
             }
-            User user = IdentityData.GetUserInfo(dtouser.Name); 
+            User user = _dBFacade.GetUserInfo(dtouser.Name); 
 
             var token = IdentityMethods.CreateToken(user,_configuration);
             return Ok(token);

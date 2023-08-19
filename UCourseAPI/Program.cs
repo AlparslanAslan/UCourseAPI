@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using UCourseAPI.Authentication;
-
+using UCourseAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -33,7 +33,7 @@ builder.Services.AddAuthentication(
             ValidateIssuerSigningKey = true
         };
     }) ;
-
+builder.Services.AddSingleton<DBFacade>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -8,12 +8,13 @@ using Dapper;
 namespace UCourseAPI.Data;
 public class DBConnection
 {
+    
     private string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";
 
     
-    public List<Course> GetAllCourses(string? name, string? category,string? language, string? subcategory, int level, int orderby)
+    public List<Course> GetAllCourses(string connectionString1,string? name, string? category,string? language, string? subcategory, int level, int orderby)
     {
-        using (IDbConnection dbConnection = new SqlConnection(connectionString))
+        using (IDbConnection dbConnection = new SqlConnection(connectionString1))
         {
             var parameters = new { name ='%'+name+'%', category,language, subcategory,level, orderby };
             string query = @"
