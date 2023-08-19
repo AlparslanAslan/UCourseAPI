@@ -3,6 +3,7 @@ using UCourseAPI.Models;
 using UCourseAPI.Methods;
 using Microsoft.AspNetCore.Authorization;
 using UCourseAPI.Data;
+using System.Security.Claims;
 
 namespace UCourseAPI.Controllers
 {
@@ -21,7 +22,6 @@ namespace UCourseAPI.Controllers
         }
 
         [HttpPost("register")]
-        
         public int Register(DtoUser dtouser)
         {
             IdentityMethods.CreatePasswordHash(dtouser.Password,out byte[] passwordHash,out byte[] passwordSalt);
@@ -43,16 +43,70 @@ namespace UCourseAPI.Controllers
                 return BadRequest("User Not Exist.");
             }
 
-            if(! IdentityMethods.IsPasswordCorrect(dtouser, out byte[] phash, out byte[] psalt ))
+            if(! IdentityMethods.IsPasswordCorrect(_dBFacade,dtouser, out byte[] phash, out byte[] psalt ))
             {
                 return BadRequest("Password is incorrect");
             }
-            User user = _dBFacade.GetUserInfo(dtouser.Name); 
+            User user = _dBFacade.GetUserInfo(dtouser.Name,dtouser.Email); 
 
             var token = IdentityMethods.CreateToken(user,_configuration);
             return Ok(token);
 
 
+        }
+        [HttpGet]
+        public IActionResult GetUserInfo()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var user = IdentityMethods.GetCurrentUser(identity);
+            return Ok(_dBFacade.GetUserInfo(user.Name,user.Email));
+        }
+
+        [HttpPost("UpdateUserInfo")]
+        public IActionResult UpdateUserInfo(UserInfoRequest dtouser) 
+        {
+           
+            var newuser = new User();
+            newuser.Name = dtouser.Name;
+            newuser.Email = dtouser.Email;
+            newuser.Desciption = dtouser.Description;
+            
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var _user = IdentityMethods.GetCurrentUser(identity);
+            int result = _dBFacade.UpdateUserInfo(_user, newuser);
+            return Ok(result);
+        }
+        [HttpPost]
+        public IActionResult UpdateUserPassword(UserPasswordRequest userPassword)
+        {
+            if (userPassword.Password != userPassword.PasswordAgain)
+                return BadRequest("Old Password is Wrong.");
+
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var user = IdentityMethods.GetCurrentUser(identity);
+            var dtoUser = new DtoUser
+            {
+                Name = user.Name,
+                Email = user.Email,
+                Password = userPassword.Password
+            };
+            
+            if (!IdentityMethods.IsPasswordCorrect(_dBFacade, dtoUser, out byte[] phash, out byte[] psalt))
+            {
+                return BadRequest("Password is incorrect");
+            }
+
+            IdentityMethods.CreatePasswordHash(dtoUser.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+            var newuser = new User();
+            newuser.Name = dtoUser.Name;
+            newuser.Email = dtoUser.Email;
+            newuser.PasswordHash = passwordHash;
+            newuser.PasswordSalt = passwordSalt;
+
+            var result = _dBFacade.UpdateUserPassword(newuser);
+
+            return Ok(result);
         }
     }
 }

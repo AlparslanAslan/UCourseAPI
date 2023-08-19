@@ -5,7 +5,7 @@ namespace UCourseAPI.Data
     public class DBFacade
     {
         private readonly IConfiguration _configuration;
-        private readonly string _connectionstring;
+        private  readonly string _connectionstring;
 
         public DBFacade(IConfiguration configuration)
         {
@@ -18,38 +18,64 @@ namespace UCourseAPI.Data
             var bdm = new DBConnection();
             return bdm.GetAllCourses(_connectionstring, name,category,language,subcategory,level,orderby);
         }
-        public int InsertCourse(CourseInsertRequest course)
+        public int InsertCourse( CourseInsertRequest course)
         {
             var dbm = new DBConnection();
-            return dbm.InsertCourse(course);
+            return dbm.InsertCourse(_connectionstring, course);
 
         }
-        public int UpdateCourse(CourseUpdateRequest course)
+        public int UpdateCourse( CourseUpdateRequest course)
         {
             var dbm = new DBConnection();   
-            return dbm.UpdateCourse(course);
+            return dbm.UpdateCourse(_connectionstring, course);
 
         }
-        public int DeleteCourse(int id)
+        public int DeleteCourse( int id)
         {
             var dbm = new DBConnection();
-            return dbm.DeleteCourse(id);
+            return dbm.DeleteCourse(_connectionstring, id);
 
         }
-        public int UserRegister(User user)
+        public int UserRegister( User user)
         {
-            return IdentityData.UserRegister(user);
+            var dbm = new IdentityData();
+            return dbm.UserRegister(_connectionstring, user);
 
         }
         public int IsUserExist(DtoUser user)
         {
-            return IdentityData.IsUserExist(user);
+            var dbm = new IdentityData();
+            return dbm.IsUserExist(_connectionstring, user);
         }
-        public User GetUserInfo(string name)
+        public User GetUserInfo( string name,string email)
         {
-            return IdentityData.GetUserInfo(name);
+            var dbm = new IdentityData();
+            return dbm.GetUserInfo(_connectionstring, name,email);
         }
-
-
+        public int PurchaseCourse(int courseId, User user)
+        {
+            var dbm = new DBConnection();
+            return dbm.PurchaseCourse(_connectionstring, courseId, user);
+        }
+        public IEnumerable<Course> GetUserCourseList( User user)
+        {
+            var dbm = new DBConnection();
+            return dbm.GetUserCourseList(_connectionstring, user);
+        }
+        public IEnumerable<Course> GetAuthorCourses( User user)
+        {
+            var dbm = new DBConnection();
+            return dbm.GetAuthorCourses(_connectionstring, user);
+        }
+        public int UpdateUserInfo( User oldUser, User newUser)
+        {
+            var dbm = new IdentityData();
+            return dbm.UpdateUserInfo(_connectionstring, oldUser, newUser);
+        }
+        public int UpdateUserPassword(User user)
+        {
+            var dbm = new IdentityData();
+            return dbm.UpdateUserPassword(_connectionstring, user);
+        }
     }
 }

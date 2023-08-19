@@ -6,11 +6,11 @@ using UCourseAPI.Models;
 
 namespace UCourseAPI.Data
 {
-    public static class IdentityData
+    public  class IdentityData
     {
-        private static string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";
+        //private   string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";
 
-        public static int UserRegister(User user)
+        public   int UserRegister(string connectionString, User user)
         {
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
@@ -18,7 +18,7 @@ namespace UCourseAPI.Data
                 return dbConnection.Execute(query,user);
             }
         }
-        public static int IsUserExist(DtoUser user)
+        public   int IsUserExist(string connectionString, DtoUser user)
         {
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
@@ -27,15 +27,39 @@ namespace UCourseAPI.Data
             }
         }
         
-        public static User GetUserInfo(string name)
+        public   User GetUserInfo(string connectionString, string name,string email)
         {
-            var parameters = new { name };
+            var parameters = new { name,email };
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
-                string query = @"select name,passwordhash,passwordsalt,role Role from person where name=@name ";
+                string query = @"select id,name,passwordhash,passwordsalt,role Role,email Email from person where name=@name and email=@email ";
                 return dbConnection.QueryFirstOrDefault<User>(query, parameters);
             }
         }
+        public int UpdateUserInfo(string connectionString,User oldUser, User NewUser)
+        {
+            var parameters = new { oldname = oldUser.Name, oldemail=oldUser.Email, 
+                newname=NewUser.Name, newemail=NewUser.Email,description=NewUser.Desciption
+            };
+            using (IDbConnection dbConnection = new SqlConnection(connectionString))
+            {
+                var query = @"update person
+                set name =@newname, email=@newemail,description=@description
+                where name=@oldname and email= @oldemail";
 
+                return dbConnection.Execute(query, parameters );
+            }
+        }
+        public int UpdateUserPassword(string connectionString, User user)
+        {
+            using (IDbConnection dbConnection = new SqlConnection(connectionString))
+            {
+                var query = @"
+                update person set passwordhash=@PasswordHash, passwordsalt=@PasswordSalt where name=@Name and email= @Email
+                ";
+                return dbConnection.Execute(query, user);
+            }
+
+        }
     }
 }

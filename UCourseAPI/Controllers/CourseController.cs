@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using UCourseAPI.Authentication;
 using UCourseAPI.Data;
+using UCourseAPI.Methods;
 using UCourseAPI.Models;
 
 namespace UCourseAPI.Controllers
@@ -27,26 +29,46 @@ namespace UCourseAPI.Controllers
             //return dbmethode.GetAllCourses(name,category,language,subcategory,level,orderby);
         }
 
-        [HttpPost]
+        [HttpPost("InsertCourse")]
         public int InsertCourse(CourseInsertRequest course)
         {
-            var _dbFacade = new DBConnection();
             return _dbFacade.InsertCourse(course);
         }
         [HttpPut]
         public int UpdateCourse(CourseUpdateRequest course)
         {
-            var dbmethode = new DBConnection();
             return _dbFacade.UpdateCourse(course);
         }
         [HttpDelete]
         public int DeleteCourse(int courseid)
         {
-            var dbmethode = new DBConnection();
             return _dbFacade.DeleteCourse(courseid);
         }
+        [HttpPost("purchase")]
+        public int PurchaseCourse(int courseId)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var user = IdentityMethods.GetCurrentUser(identity);
+            return _dbFacade.PurchaseCourse(courseId, user);
 
+        }
+        [HttpGet("getusercourses")]
+        public IEnumerable<Course> GetUserCourses()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var user = IdentityMethods.GetCurrentUser(identity);
+            if(user.Role=="User")
+            {
+                return  _dbFacade.GetUserCourseList(user);
+            }
+            else if(user.Role == "Author")
+            {
+                return _dbFacade.GetAuthorCourses(user);
+            }
+            return null;
+            
 
+        }
 
     }
 }

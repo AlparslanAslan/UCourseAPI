@@ -4,17 +4,18 @@ using System.Data;
 using System.Data.SqlClient;
 using UCourseAPI.Models;
 using Dapper;
+using System.Data.Common;
 
 namespace UCourseAPI.Data;
 public class DBConnection
 {
     
-    private string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";
+    //private string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";
 
     
-    public List<Course> GetAllCourses(string connectionString1,string? name, string? category,string? language, string? subcategory, int level, int orderby)
+    public List<Course> GetAllCourses(string connectionString,string? name, string? category,string? language, string? subcategory, int level, int orderby)
     {
-        using (IDbConnection dbConnection = new SqlConnection(connectionString1))
+        using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
             var parameters = new { name ='%'+name+'%', category,language, subcategory,level, orderby };
             string query = @"
@@ -51,7 +52,7 @@ public class DBConnection
             return courses;
         }
     }
-    public int InsertCourse(CourseInsertRequest course)
+    public int InsertCourse( string connectionString, CourseInsertRequest course)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
@@ -72,7 +73,7 @@ public class DBConnection
         }
     }
 
-    public int UpdateCourse(CourseUpdateRequest course)
+    public int UpdateCourse(string connectionString, CourseUpdateRequest course)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
@@ -102,7 +103,7 @@ public class DBConnection
 
     }
 
-    public int DeleteCourse(int id)
+    public int DeleteCourse(string connectionString, int id)
     {
         var parameters = new { id };
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
@@ -113,5 +114,68 @@ public class DBConnection
             return dbConnection.Execute(query, parameters);
         }
     }
+    public int PurchaseCourse(string connectionString, int courseId , User user)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionString))
+        {
+            var parameters = new { courseId,useremail = user.Email,username=user.Name};
+            string query = @"
+                        
+                declare @userId int,@price numeric(20,2)
+                select @userId=id from person where name=@username and email=@useremail
+                select @price = price from course where id=@courseId
+                
+                if(@userId is not null and @courseId is not null and @price is not null )
+                insert into acquisition values(@userId,@courseId,@price,GETDATE())
+            ";
+            return dbConnection.Execute(query, parameters);
+        }
+    }
+    public IEnumerable<Course> GetUserCourseList(string connectionString, User user)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionString))
+        {
+            string query = @"
 
+             declare @userId int
+            select @userId=id from person where name=@Name and email=@Email
+            
+            
+            select c.name,a.price,c.description,c.duration,p1.explanation categories , p2.explanation subcategories, p3.explanation language
+            ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level
+            from acquisition a
+            left join course c on c.id= a.courseId 
+             left join parameters p1 on p1.name='categories' and p1.parno=c.categories
+             left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
+             left join parameters p3 on p3.name='language' and p3.parno=c.language
+            where userId=@userId
+                ";
+            return dbConnection.Query<Course>(query,user);
+        }
+    }
+
+    public IEnumerable<Course> GetAuthorCourses(string connectionString, User user)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionString))
+        {
+            var query = @"
+
+        
+            declare @authorId int;
+            select @authorId=id from person where name=@Name and email=@Email
+            
+            
+            select  c.name,c.price,c.description,c.duration,p1.explanation categories , p2.explanation subcategories, p3.explanation language
+            ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date
+            from course c 
+            left join parameters p1 on p1.name='categories' and p1.parno=c.categories
+            left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
+            left join parameters p3 on p3.name='language' and p3.parno=c.language
+            where authorId=@authorId
+            ";
+            return dbConnection.Query<Course>(query, user);
+        }
+
+
+    }
 }

@@ -19,9 +19,9 @@ namespace UCourseAPI.Methods
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
             }
         }
-        public static bool IsPasswordCorrect(DtoUser user, out byte[] passwordHash, out byte[] passwordSalt)
+        public static bool IsPasswordCorrect(DBFacade dBFacade,DtoUser user, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            var _user = IdentityData.GetUserInfo(user.Name);
+            var _user = dBFacade.GetUserInfo(user.Name,user.Email);
             using (var hmac = new HMACSHA512(_user.PasswordSalt))
             {
                 passwordSalt = _user.PasswordSalt;
@@ -33,6 +33,7 @@ namespace UCourseAPI.Methods
         {
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.Email,user.Email),
                 new Claim(ClaimTypes.Role,user.Role),
                 new Claim(ClaimTypes.Name,user.Name)
             };
@@ -50,6 +51,20 @@ namespace UCourseAPI.Methods
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
             return jwt;
             
+        }
+        public static User GetCurrentUser(ClaimsIdentity identity)
+        {
+            if(identity != null)
+            {
+                var claims = identity.Claims;
+                return new User
+                {
+                    Name = claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value,
+                    Email = claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value,
+                    Role = claims.FirstOrDefault(x => x.Type == ClaimTypes.Role).Value
+                };
+            }
+            return null;
         }
     }
 }
