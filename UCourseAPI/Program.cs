@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using UCourseAPI.Authentication;
 using UCourseAPI.Data;
+using WebApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -34,6 +35,9 @@ builder.Services.AddAuthentication(
         };
     }) ;
 builder.Services.AddSingleton<DBFacade>();
+
+ConfigManager.Initialize(config);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

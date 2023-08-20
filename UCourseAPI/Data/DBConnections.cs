@@ -7,14 +7,16 @@ using Dapper;
 using System.Data.Common;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
+using WebApi.Data;
 
 namespace UCourseAPI.Data;
-public class DBConnection
+public class DBConnection 
 {
     
     //private string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";  
     public List<Course> GetAllCourses(string connectionString,string? name, string? category,string? language, string? subcategory, int level, int orderby)
     {
+        var x =ConfigManager.GetConnectionString();
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
             var parameters = new { name ='%'+name+'%', category,language, subcategory,level, orderby };
