@@ -76,7 +76,7 @@ namespace UCourseAPI.Controllers
             int result = _dBFacade.UpdateUserInfo(_user, newuser);
             return Ok(result);
         }
-        [HttpPost]
+        [HttpPost("updateuserpassword")]
         public IActionResult UpdateUserPassword(UserPasswordRequest userPassword)
         {
             if (userPassword.Password != userPassword.PasswordAgain)
@@ -108,5 +108,8 @@ namespace UCourseAPI.Controllers
 
             return Ok(result);
         }
+
+        
+
     }
 }

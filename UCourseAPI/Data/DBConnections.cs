@@ -5,14 +5,14 @@ using System.Data.SqlClient;
 using UCourseAPI.Models;
 using Dapper;
 using System.Data.Common;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 
 namespace UCourseAPI.Data;
 public class DBConnection
 {
     
-    //private string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";
-
-    
+    //private string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";  
     public List<Course> GetAllCourses(string connectionString,string? name, string? category,string? language, string? subcategory, int level, int orderby)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
@@ -31,12 +31,13 @@ public class DBConnection
              c.id,c.name,c.price,p1.explanation categories,p2.explanation subcategories,
              
              case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,
-             c.duration,c.description,p3.explanation language, c.date
+             c.duration,c.description,p3.explanation language, c.date,s.avgscore Score
              
              from course c
              left join parameters p1 on p1.name='categories' and p1.parno=categories
              left join parameters p2 on p2.name='subcategories' and p2.parno=subcategories
              left join parameters p3 on p3.name='language' and p3.parno=language
+             left join (select courseId,avg(star) avgscore from star group by courseId) s on s.courseId= c.id
              where 
              c.name like isnull(@name,c.name) and
              categories= isnull(nullif(@categoriesnumeric,0),categories)  and
@@ -174,8 +175,47 @@ public class DBConnection
             where authorId=@authorId
             ";
             return dbConnection.Query<Course>(query, user);
+        }        
+    }
+    public int InsertReview(string connectionString, User user,string review,int courseId)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionString))
+        {
+            var paremeters = new { review, courseId,useremail=user.Email };
+            var query = @"
+             declare @userId int;
+ 
+             select @userId = id from person where email=@useremail               
+
+             insert into review values(@userId,@review,@courseId,GETDATE())
+             ";
+            return dbConnection.Execute(query,paremeters);
+        }
+    }
+    public List<string> GetCourseDetails(string connectionString,int courseId)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionString))
+        {
+            var paremeters = new { courseId };
+            var query = @"
+             select review from review where courseId=@courseId
+             ";
+            return dbConnection.Query<string>(query, paremeters).AsList();
         }
 
-
     }
+    public int AddScore(string connectionString,decimal score, User user,int courseId)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionString))
+        {
+            var paremeters = new { courseId, useremail = user.Email, score };
+            var query = @"
+            declare @userId int ;
+            select @userId = id from person where email=@useremail
+            insert into star values(@userId,@courseId,@score)
+             ";
+            return dbConnection.Execute(query, paremeters);
+        }
+    }
+
 }

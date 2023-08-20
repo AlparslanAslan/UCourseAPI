@@ -12,5 +12,7 @@ namespace UCourseAPI.Models
         public string Description { get; set; }
         public string Language { get; set; }
         public DateTime Date { get; set; }
+        public List<string> Review { get; set; }
+        public float Score { get; set; }
     }
 }

@@ -77,5 +77,21 @@ namespace UCourseAPI.Data
             var dbm = new IdentityData();
             return dbm.UpdateUserPassword(_connectionstring, user);
         }
+        public int InsertReview( User user, string review, int courseId)
+        {
+            var dbm = new DBConnection();
+            return dbm.InsertReview(_connectionstring, user, review, courseId);
+        }
+        public List<string> GetCourseDetails(int courseId)
+        {
+            var dbm = new DBConnection();
+            return dbm.GetCourseDetails(_connectionstring, courseId);
+        }
+        public int AddScore(decimal score, User user, int courseId)
+        {
+            var dbm = new DBConnection();   
+           return dbm.AddScore(_connectionstring, score, user, courseId);
+        }
+
     }
 }

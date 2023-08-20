@@ -59,9 +59,9 @@ namespace UCourseAPI.Methods
                 var claims = identity.Claims;
                 return new User
                 {
-                    Name = claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value,
-                    Email = claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value,
-                    Role = claims.FirstOrDefault(x => x.Type == ClaimTypes.Role).Value
+                    Name = claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value,
+                    Email = claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value,
+                    Role = claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value
                 };
             }
             return null;

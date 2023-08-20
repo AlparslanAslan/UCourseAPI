@@ -69,6 +69,28 @@ namespace UCourseAPI.Controllers
             
 
         }
+        [HttpPost("insertreview")]
+        public IActionResult InsertReview(string review, int courseId)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var _user = IdentityMethods.GetCurrentUser(identity);
 
+            var result = _dbFacade.InsertReview(_user, review, courseId);
+            return Ok(result);
+        }
+        [HttpGet("coursedetails")]
+        public IActionResult GetCourseDetails(int courseId)
+        {
+            var result =  _dbFacade.GetCourseDetails(courseId);
+            return Ok(result);
+        }
+        [HttpPost("addscore")]
+        public IActionResult AddScore(decimal score,int courseId)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var _user = IdentityMethods.GetCurrentUser(identity);
+            var result = _dbFacade.AddScore(score, _user, courseId);
+            return Ok(result);
+        }
     }
 }
