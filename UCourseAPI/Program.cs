@@ -35,6 +35,15 @@ builder.Services.AddAuthentication(
         };
     }) ;
 builder.Services.AddSingleton<DBFacade>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+    {
+        builder.AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader();
+    }); 
+});
 
 ConfigManager.Initialize(config);
 
@@ -50,7 +59,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 //app.UseMiddleware<ApiKEyAuthMiddleware>();
-
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
