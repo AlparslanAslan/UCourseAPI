@@ -19,27 +19,34 @@ namespace UCourseAPI.Controllers
             _logger = logger;
             _dbFacade = dbFacade;
         }
-        [HttpGet]
+
         //[ServiceFilter(typeof(ApiAuthFilter))]
         //[Authorize(Roles ="Administrator")]
+        [HttpGet("getallcourses")]
+        public IEnumerable<Course> GetALlCourses()
+        {
+            return _dbFacade.GetAllCourses(null, null, null, null, 0, 0);
+            //var dbmethode = new DBConnection();
+            //return dbmethode.GetAllCourses(name,category,language,subcategory,level,orderby);
+        }
+        [HttpGet("getcourses")]
         public IEnumerable<Course> GetCourses(string? name,string? category,string? language,string? subcategory,int level,int orderby)
         {
             return _dbFacade.GetAllCourses(name, category, language, subcategory, level, orderby);
             //var dbmethode = new DBConnection();
             //return dbmethode.GetAllCourses(name,category,language,subcategory,level,orderby);
         }
-
         [HttpPost("InsertCourse")]
         public int InsertCourse(CourseInsertRequest course)
         {
             return _dbFacade.InsertCourse(course);
         }
-        [HttpPut]
+        [HttpPut("updatecourse")]
         public int UpdateCourse(CourseUpdateRequest course)
         {
             return _dbFacade.UpdateCourse(course);
         }
-        [HttpDelete]
+        [HttpDelete("deletecourse")]
         public int DeleteCourse(int courseid)
         {
             return _dbFacade.DeleteCourse(courseid);
