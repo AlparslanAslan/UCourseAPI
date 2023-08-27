@@ -30,6 +30,7 @@ namespace UCourseAPI.Controllers
             //return dbmethode.GetAllCourses(name,category,language,subcategory,level,orderby);
         }
         [HttpGet("getcourses")]
+        [Authorize]
         public IEnumerable<Course> GetCourses(string? name,string? category,string? language,string? subcategory,int level,int orderby)
         {
             return _dbFacade.GetAllCourses(name, category, language, subcategory, level, orderby);

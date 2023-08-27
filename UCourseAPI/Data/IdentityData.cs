@@ -14,7 +14,7 @@ namespace UCourseAPI.Data
         {
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
-                string query = @"insert into person values(@Name,@PasswordHash,@PasswordSalt) ";
+                string query = @"insert into person (name,email,passwordhash,passwordsalt) values(@Name,@Email,@PasswordHash,@PasswordSalt) ";
                 return dbConnection.Execute(query,user);
             }
         }
@@ -25,8 +25,7 @@ namespace UCourseAPI.Data
                 string query = @"select 1 from person where name=@Name ";
                 return dbConnection.QueryFirstOrDefault<int>(query, user);
             }
-        }
-        
+        } 
         public   User GetUserInfo(string connectionString, string name,string email)
         {
             var parameters = new { name,email };

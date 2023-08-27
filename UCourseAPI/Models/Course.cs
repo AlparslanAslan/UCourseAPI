@@ -4,6 +4,7 @@ namespace UCourseAPI.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string Author { get; set; }
         public decimal Price { get; set; }
         public string Categories { get; set; }
         public string Subcategories { get; set; }

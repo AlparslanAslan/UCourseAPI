@@ -33,9 +33,10 @@ public class DBConnection
              c.id,c.name,c.price,p1.explanation categories,p2.explanation subcategories,
              
              case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,
-             c.duration,c.description,p3.explanation language, c.date,s.avgscore Score
+             c.duration,c.description,p3.explanation language, c.date,s.avgscore Score, pa.name author
              
              from course c
+             left join person pa on pa.id =c.authorId 
              left join parameters p1 on p1.name='categories' and p1.parno=categories
              left join parameters p2 on p2.name='subcategories' and p2.parno=subcategories
              left join parameters p3 on p3.name='language' and p3.parno=language
@@ -70,8 +71,9 @@ public class DBConnection
             set @languagenumeric = (select top 1 parno from parameters where name='language' and explanation=@language)
             
             if(@categoriesnumeric is not null or @languagenumeric is not null or @subcategoriesnumeric is not null)
-            insert into course values(@name,@price,@categoriesnumeric,@subcategoriesnumeric,@level,null,@description,@languagenumeric,GETDATE())";
-            
+            insert into course (name,price,categories,subcategories,level,description,language,date)
+           values(@name,@price,@categoriesnumeric,@subcategoriesnumeric,@level,@description,@languagenumeric,GETDATE())
+            ";
             return dbConnection.Execute(query, course);
         }
     }
@@ -189,7 +191,8 @@ public class DBConnection
  
              select @userId = id from person where email=@useremail               
 
-             insert into review values(@userId,@review,@courseId,GETDATE())
+              insert into review (userId,review,courseId,date)
+              values(@userId,@review,@courseId,GETDATE())
              ";
             return dbConnection.Execute(query,paremeters);
         }
@@ -214,7 +217,8 @@ public class DBConnection
             var query = @"
             declare @userId int ;
             select @userId = id from person where email=@useremail
-            insert into star values(@userId,@courseId,@score)
+            insert into star (userId,courseId,star)
+            values(@userId,@courseId,@score)
              ";
             return dbConnection.Execute(query, paremeters);
         }
