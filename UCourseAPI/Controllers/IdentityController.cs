@@ -9,7 +9,7 @@ namespace UCourseAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class IdentityController : ControllerBase
+    public class IdentityController : ControllerBase  
     {
         public static User user = new User();
         public readonly IConfiguration _configuration;
