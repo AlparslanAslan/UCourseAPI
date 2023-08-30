@@ -42,15 +42,15 @@ namespace UCourseAPI.Data
             return dbm.UserRegister(_connectionstring, user);
 
         }
-        public int IsUserExist(DtoUser user)
+        public int IsUserExist(LoginUser user)
         {
             var dbm = new IdentityData();
             return dbm.IsUserExist(_connectionstring, user);
         }
-        public User GetUserInfo( string name,string email)
+        public User GetUserInfo( string email)
         {
             var dbm = new IdentityData();
-            return dbm.GetUserInfo(_connectionstring, name,email);
+            return dbm.GetUserInfo(_connectionstring,email);
         }
         public int PurchaseCourse(int courseId, User user)
         {

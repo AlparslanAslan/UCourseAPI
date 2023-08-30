@@ -9,36 +9,38 @@ namespace UCourseAPI.Data
     public  class IdentityData
     {
         //private   string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";
-
         public   int UserRegister(string connectionString, User user)
         {
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
-                string query = @"insert into person (name,email,passwordhash,passwordsalt) values(@Name,@Email,@PasswordHash,@PasswordSalt) ";
+                string query = @"
+                 insert into person 
+                 (name,email,description,role,passwordhash,passwordsalt,date) values
+                (@Name,@Email,@Description,@Role,@PasswordHash,@PasswordSalt,getdate()) ";
                 return dbConnection.Execute(query,user);
             }
         }
-        public   int IsUserExist(string connectionString, DtoUser user)
+        public int IsUserExist(string connectionString, LoginUser user)
         {
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
-                string query = @"select 1 from person where name=@Name ";
+                string query = @"select 1 from person where email=@Email ";
                 return dbConnection.QueryFirstOrDefault<int>(query, user);
             }
         } 
-        public   User GetUserInfo(string connectionString, string name,string email)
+        public   User GetUserInfo(string connectionString, string email)
         {
-            var parameters = new { name,email };
+            var parameters = new { email };
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
-                string query = @"select id,name,passwordhash,passwordsalt,role Role,email Email from person where name=@name and email=@email ";
+                string query = @"select id,name,passwordhash,passwordsalt,role Role,email Email from person where email=@email ";
                 return dbConnection.QueryFirstOrDefault<User>(query, parameters);
             }
         }
         public int UpdateUserInfo(string connectionString,User oldUser, User NewUser)
         {
             var parameters = new { oldname = oldUser.Name, oldemail=oldUser.Email, 
-                newname=NewUser.Name, newemail=NewUser.Email,description=NewUser.Desciption
+                newname=NewUser.Name, newemail=NewUser.Email,description=NewUser.Description
             };
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
@@ -54,7 +56,7 @@ namespace UCourseAPI.Data
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
                 var query = @"
-                update person set passwordhash=@PasswordHash, passwordsalt=@PasswordSalt where name=@Name and email= @Email
+                update person set passwordhash=@PasswordHash, passwordsalt=@PasswordSalt where email= @Email
                 ";
                 return dbConnection.Execute(query, user);
             }

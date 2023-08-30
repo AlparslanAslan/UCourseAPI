@@ -127,7 +127,7 @@ public class DBConnection
             string query = @"
                         
                 declare @userId int,@price numeric(20,2)
-                select @userId=id from person where name=@username and email=@useremail
+                select @userId=id from person where email=@useremail
                 select @price = price from course where id=@courseId
                 
                 if(@userId is not null and @courseId is not null and @price is not null )

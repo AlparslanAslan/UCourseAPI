@@ -30,7 +30,7 @@ namespace UCourseAPI.Controllers
             //return dbmethode.GetAllCourses(name,category,language,subcategory,level,orderby);
         }
         [HttpGet("getcourses")]
-        [Authorize]
+       
         public IEnumerable<Course> GetCourses(string? name,string? category,string? language,string? subcategory,int level,int orderby)
         {
             return _dbFacade.GetAllCourses(name, category, language, subcategory, level, orderby);
@@ -53,11 +53,11 @@ namespace UCourseAPI.Controllers
             return _dbFacade.DeleteCourse(courseid);
         }
         [HttpPost("purchase")]
-        public int PurchaseCourse(int courseId)
+        public int PurchaseCourse(int CourseId)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
-            return _dbFacade.PurchaseCourse(courseId, user);
+            return _dbFacade.PurchaseCourse(CourseId, user);
 
         }
         [HttpGet("getusercourses")]

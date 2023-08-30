@@ -22,13 +22,16 @@ namespace UCourseAPI.Controllers
         }
 
         [HttpPost("register")]
-        public int Register(DtoUser dtouser)
+        public int Register(UserRegister dtouser)
         {
             IdentityMethods.CreatePasswordHash(dtouser.Password,out byte[] passwordHash,out byte[] passwordSalt);
 
             user.Name = dtouser.Name;
+            user.Description = dtouser.Description;
+            user.Role = dtouser.Role;
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
+            user.Email = dtouser.Email;
             
             return _dBFacade.UserRegister(user);
             //return _dbFacade.UserRegister(user);
@@ -36,18 +39,18 @@ namespace UCourseAPI.Controllers
 
         }
         [HttpPost("login")]
-        public IActionResult Login(DtoUser dtouser)
+        public IActionResult Login(LoginUser loginUser)
         {
-            if(_dBFacade.IsUserExist(dtouser) != 1)
+            if(_dBFacade.IsUserExist(loginUser) != 1)
             {
-                return BadRequest("User Not Exist.");
+                return BadRequest("Email is Incorrect.");
             }
 
-            if(! IdentityMethods.IsPasswordCorrect(_dBFacade,dtouser, out byte[] phash, out byte[] psalt ))
+            if(!IdentityMethods.IsPasswordCorrect(_dBFacade, loginUser, out byte[] phash, out byte[] psalt ))
             {
                 return BadRequest("Password is incorrect");
             }
-            User user = _dBFacade.GetUserInfo(dtouser.Name,dtouser.Email); 
+            User user = _dBFacade.GetUserInfo( loginUser.Email); 
 
             var token = IdentityMethods.CreateToken(user,_configuration);
             return Ok(token);
@@ -59,34 +62,31 @@ namespace UCourseAPI.Controllers
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
-            return Ok(_dBFacade.GetUserInfo(user.Name,user.Email));
+            return Ok(_dBFacade.GetUserInfo(user.Email));
         }
 
         [HttpPost("UpdateUserInfo")]
-        public IActionResult UpdateUserInfo(UserInfoRequest dtouser) 
+        public IActionResult UpdateUserInfo(UserInfoRequest dtouser)
         {
-           
-            var newuser = new User();
-            newuser.Name = dtouser.Name;
-            newuser.Email = dtouser.Email;
-            newuser.Desciption = dtouser.Description;
-            
+            var newuser = new User()
+            {
+                Name = dtouser.Name,
+                Email = dtouser.Email,
+                Description = dtouser.Description
+            };
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var _user = IdentityMethods.GetCurrentUser(identity);
             int result = _dBFacade.UpdateUserInfo(_user, newuser);
-            return Ok(result);
+            var token = IdentityMethods.CreateToken(newuser, _configuration);
+            return Ok(token);
         }
         [HttpPost("updateuserpassword")]
         public IActionResult UpdateUserPassword(UserPasswordRequest userPassword)
         {
-            if (userPassword.Password != userPassword.PasswordAgain)
-                return BadRequest("Old Password is Wrong.");
-
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
-            var dtoUser = new DtoUser
+            var dtoUser = new LoginUser
             {
-                Name = user.Name,
                 Email = user.Email,
                 Password = userPassword.Password
             };
@@ -99,7 +99,6 @@ namespace UCourseAPI.Controllers
             IdentityMethods.CreatePasswordHash(dtoUser.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             var newuser = new User();
-            newuser.Name = dtoUser.Name;
             newuser.Email = dtoUser.Email;
             newuser.PasswordHash = passwordHash;
             newuser.PasswordSalt = passwordSalt;
