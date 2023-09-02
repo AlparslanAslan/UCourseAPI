@@ -77,7 +77,6 @@ public class DBConnection
             return dbConnection.Execute(query, course);
         }
     }
-
     public int UpdateCourse(string connectionString, CourseUpdateRequest course)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
@@ -107,7 +106,6 @@ public class DBConnection
         }
 
     }
-
     public int DeleteCourse(string connectionString, int id)
     {
         var parameters = new { id };
@@ -158,7 +156,6 @@ public class DBConnection
             return dbConnection.Query<Course>(query,user);
         }
     }
-
     public IEnumerable<Course> GetAuthorCourses(string connectionString, User user)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))

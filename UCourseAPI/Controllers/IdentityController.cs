@@ -14,28 +14,32 @@ namespace UCourseAPI.Controllers
         public static User user = new User();
         public readonly IConfiguration _configuration;
         private readonly DBFacade _dBFacade;
-
         public IdentityController(IConfiguration configuration,DBFacade dBFacade)
         {
             _configuration = configuration;
             _dBFacade = dBFacade;
         }
-
         [HttpPost("register")]
         public int Register(UserRegister dtouser)
         {
             IdentityMethods.CreatePasswordHash(dtouser.Password,out byte[] passwordHash,out byte[] passwordSalt);
-
-            user.Name = dtouser.Name;
-            user.Description = dtouser.Description;
-            user.Role = dtouser.Role;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
-            user.Email = dtouser.Email;
+            var _user = new User()
+            {
+                Name = dtouser.Name,
+                Description = dtouser.Description,
+                Role = dtouser.Role,
+                PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt,
+                Email = dtouser.Email
+            };
+            //user.Name = dtouser.Name;
+            //user.Description = dtouser.Description;
+            //user.Role = dtouser.Role;
+            //user.PasswordHash = passwordHash;
+            //user.PasswordSalt = passwordSalt;
+            //user.Email = dtouser.Email;
             
-            return _dBFacade.UserRegister(user);
-            //return _dbFacade.UserRegister(user);
-
+            return _dBFacade.UserRegister(_user);
 
         }
         [HttpPost("login")]
@@ -106,9 +110,7 @@ namespace UCourseAPI.Controllers
             var result = _dBFacade.UpdateUserPassword(newuser);
 
             return Ok(result);
-        }
-
-        
+        }    
 
     }
 }
