@@ -21,82 +21,115 @@ namespace UCourseAPI.Controllers
         }
 
         //[ServiceFilter(typeof(ApiAuthFilter))]
-        //[Authorize(Roles ="Administrator")]
         [HttpGet("getallcourses")]
-        public IEnumerable<Course> GetALlCourses()
+        public IActionResult GetALlCourses()
         {
-            return _dbFacade.GetAllCourses(null, null, null, null, 0, 0);
+            var result =  _dbFacade.GetAllCourses(null, null, null, null, 0, 0);
+            return Ok(result);
             
         }
-        [HttpGet("getcourses")]      
-        public IEnumerable<Course> GetCourses(string? name,string? category,string? language,string? subcategory,int level,int orderby)
+        
+        
+        [HttpGet("getcourses")]
+        [Authorize(Roles ="User")]
+        public IActionResult GetCourses(string? name,string? category,string? language,string? subcategory,int level,int orderby)
         {
-            return _dbFacade.GetAllCourses(name, category, language, subcategory, level, orderby);
-            //var dbmethode = new DBConnection();
-            //return dbmethode.GetAllCourses(name,category,language,subcategory,level,orderby);
+            var result = _dbFacade.GetAllCourses(name, category, language, subcategory, level, orderby);
+            return Ok(result);
         }
+        
+        
         [HttpPost("InsertCourse")]
         [Authorize(Roles = "Author")]
-        public int InsertCourse(CourseInsertRequest course)
-        {
-            return _dbFacade.InsertCourse(course);
-        }
-        [HttpPut("updatecourse")]
-        public int UpdateCourse(CourseUpdateRequest course)
-        {
-            return _dbFacade.UpdateCourse(course);
-        }
-        [HttpDelete("deletecourse")]
-        public int DeleteCourse(int courseid)
-        {
-            return _dbFacade.DeleteCourse(courseid);
-        }
-        [HttpPost("purchase")]
-        public int PurchaseCourse(int CourseId)
+        public IActionResult InsertCourse(CourseInsertRequest course)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
-            return _dbFacade.PurchaseCourse(CourseId, user);
+            course.AuthorEmail = user.Email;
+            var result = _dbFacade.InsertCourse(course);
+            
+            return Ok(result);
+        }
+        
+        
+        [HttpPut("updatecourse")]
+        [Authorize(Roles = "Author")]
+        public IActionResult UpdateCourse(CourseUpdateRequest course)
+        {
+            var result = _dbFacade.UpdateCourse(course);
+            return Ok(result);
+        }
+        
+        
+        [HttpDelete("deletecourse")]
+        [Authorize(Roles = "Author")]
+        public IActionResult DeleteCourse(int courseid)
+        {
+            var result = _dbFacade.DeleteCourse(courseid);
+            return Ok(result);
+        }
+        
+        
+        [HttpPost("purchase")]
+        [Authorize(Roles = "User")]
+        public IActionResult PurchaseCourse(int CourseId)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var user = IdentityMethods.GetCurrentUser(identity);
+            var result = _dbFacade.PurchaseCourse(CourseId, user);
+            return Ok(result);
 
         }
+        
+        
         [HttpGet("getusercourses")]
-        public IEnumerable<Course> GetUserCourses()
+        [Authorize(Roles = "User,Author")]
+        public IActionResult GetUserCourses()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
+            IEnumerable<Course> result = new List<Course>();
             if(user.Role=="User")
             {
-                return  _dbFacade.GetUserCourseList(user);
+                 result = _dbFacade.GetUserCourseList(user);
             }
             else if(user.Role == "Author")
             {
-                return _dbFacade.GetAuthorCourses(user);
+                 result = _dbFacade.GetAuthorCourses(user);
             }
-            return null;
-            
-
+            return Ok(result);
         }
+        
+        
         [HttpPost("insertreview")]
-        public IActionResult InsertReview(string review, int courseId)
+        [Authorize(Roles = "User")]
+        public IActionResult InsertReview(Review review)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var _user = IdentityMethods.GetCurrentUser(identity);
-
-            var result = _dbFacade.InsertReview(_user, review, courseId);
+            review.UserEmail = _user.Email;
+            var result = _dbFacade.InsertReview(_user, review);
             return Ok(result);
         }
+        
+        
         [HttpGet("coursedetails")]
+        [Authorize(Roles = "Author")]
         public IActionResult GetCourseDetails(int courseId)
         {
             var result =  _dbFacade.GetCourseDetails(courseId);
             return Ok(result);
         }
+        
+        
         [HttpPost("addscore")]
-        public IActionResult AddScore(decimal score,int courseId)
+        [Authorize(Roles = "User")]
+        public IActionResult AddScore(Score score)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var _user = IdentityMethods.GetCurrentUser(identity);
-            var result = _dbFacade.AddScore(score, _user, courseId);
+            score.UserEmail = _user.Email;
+            var result = _dbFacade.AddScore(score);
             return Ok(result);
         }
     }

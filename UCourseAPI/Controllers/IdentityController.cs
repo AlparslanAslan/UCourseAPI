@@ -61,7 +61,7 @@ namespace UCourseAPI.Controllers
 
 
         }
-        [HttpGet]
+        [HttpGet("UserInfo")]
         public IActionResult GetUserInfo()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
@@ -100,7 +100,7 @@ namespace UCourseAPI.Controllers
                 return BadRequest("Password is incorrect");
             }
 
-            IdentityMethods.CreatePasswordHash(dtoUser.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            IdentityMethods.CreatePasswordHash(userPassword.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
 
             var newuser = new User();
             newuser.Email = dtoUser.Email;

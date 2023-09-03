@@ -28,12 +28,12 @@ namespace UCourseAPI.Data
                 return dbConnection.QueryFirstOrDefault<int>(query, user);
             }
         } 
-        public   User GetUserInfo(string connectionString, string email)
+        public  User GetUserInfo(string connectionString, string email)
         {
             var parameters = new { email };
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
-                string query = @"select id,name,passwordhash,passwordsalt,role Role,email Email from person where email=@email ";
+                string query = @"select id,name,passwordhash,passwordsalt,role Role,email Email,description Description from person where email=@email ";
                 return dbConnection.QueryFirstOrDefault<User>(query, parameters);
             }
         }
