@@ -60,16 +60,14 @@ public class DBConnection
              declare @categoriesnumeric int;
              declare @subcategoriesnumeric int;
              declare @languagenumeric int;
-             declare @authorid int;
              
              set @categoriesnumeric = (select top 1 parno from parameters where name='categories' and explanation=@categories)
              set @subcategoriesnumeric =(select top 1 parno from parameters where name='subcategories' and explanation=@subcategories)
              set @languagenumeric = (select top 1 parno from parameters where name='language' and explanation=@language)
-             set @authorid = (select top 1 id from person where email = @AuthorEmail)
              
              if(@categoriesnumeric is not null or @languagenumeric is not null or @subcategoriesnumeric is not null)
              insert into course (name,authorId,price,categories,subcategories,level,description,language,date)
-            values(@name,@authorid,@price,@categoriesnumeric,@subcategoriesnumeric,@level,@description,@languagenumeric,GETDATE())
+            values(@name,@authorId,@price,@categoriesnumeric,@subcategoriesnumeric,@level,@description,@languagenumeric,GETDATE())
             
             ";
             return dbConnection.Execute(query, course);
@@ -119,15 +117,14 @@ public class DBConnection
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
-            var parameters = new { courseId,useremail = user.Email,username=user.Name};
+            var parameters = new { courseId, user.Id};
             string query = @"
                         
-                declare @userId int,@price numeric(20,2)
-                select @userId=id from person where email=@useremail
+                declare @price numeric(20,2)
                 select @price = price from course where id=@courseId
                 
-                if(@userId is not null and @courseId is not null and @price is not null )
-                insert into acquisition values(@userId,@courseId,@price,GETDATE())
+                if(@Id is not null and @courseId is not null and @price is not null )
+                insert into acquisition values(@Id,@courseId,@price,GETDATE())
             ";
             return dbConnection.Execute(query, parameters);
         }
@@ -138,9 +135,6 @@ public class DBConnection
         {
             string query = @"
 
-             declare @userId int
-            select @userId=id from person where name=@Name and email=@Email
-            
             
             select c.id,c.name,a.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
             ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level
@@ -149,7 +143,7 @@ public class DBConnection
              left join parameters p1 on p1.name='categories' and p1.parno=c.categories
              left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
              left join parameters p3 on p3.name='language' and p3.parno=c.language
-            where userId=@userId
+            where userId=@Id
                 ";
             return dbConnection.Query<CourseResponse>(query,user);
         }
@@ -159,8 +153,6 @@ public class DBConnection
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
             var query = @"
-            declare @authorId int;
-             select @authorId=id from person where  email=@Email
              
              select  c.id,c.name,author.name author ,c.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
              ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date
@@ -169,7 +161,7 @@ public class DBConnection
              left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
              left join parameters p3 on p3.name='language' and p3.parno=c.language
              left join person author on author.id=c.authorId 
-             where authorId=@authorId
+             where authorId=@Id
         
            
             ";
@@ -182,9 +174,6 @@ public class DBConnection
         {
             
             var query = @"
-             declare @userId int;
- 
-             select @userId = id from person where email=@UserEmail               
 
               insert into review (userId,review,courseId,date)
               values(@userId,@ReviewText,@courseId,GETDATE())
@@ -216,8 +205,6 @@ public class DBConnection
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
             var query = @"
-            declare @userId int ;
-            select @userId = id from person where email=@UserEmail
             insert into star (userId,courseId,star)
             values(@userId,@courseId,@star)
              ";

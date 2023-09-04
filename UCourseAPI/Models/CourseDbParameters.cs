@@ -9,6 +9,6 @@ namespace UCourseAPI.Models
         public int Level { get; set; }
         public string Description { get; set; }
         public string Language { get; set; }
-        public string AuthorEmail { get; set; } 
+        public int AuthorId { get; set; } 
     }
 }

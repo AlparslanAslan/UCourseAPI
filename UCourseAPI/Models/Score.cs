@@ -5,6 +5,6 @@
         public int Id { get; set; }
         public decimal Star { get; set; }
         public int CourseId { get; set; }
-        public string? UserEmail { get; set; }
+        public int UserId { get; set; }
     }
 }

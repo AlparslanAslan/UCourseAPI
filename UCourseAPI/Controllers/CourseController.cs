@@ -60,7 +60,7 @@ namespace UCourseAPI.Controllers
                 Language = course.Language,
                 Level = course.Level,
                 Price = course.Price,
-                AuthorEmail = user.Email
+                AuthorId = user.Id
             };
             var result = _dbFacade.InsertCourse(_course);
             return Ok(result);
@@ -132,7 +132,7 @@ namespace UCourseAPI.Controllers
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var _user = IdentityMethods.GetCurrentUser(identity);
-            review.UserEmail = _user.Email;
+            review.UserId  = _user.Id;
             var result = _dbFacade.InsertReview(_user, review);
             return Ok(result);
         }
@@ -156,7 +156,7 @@ namespace UCourseAPI.Controllers
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var _user = IdentityMethods.GetCurrentUser(identity);
-            score.UserEmail = _user.Email;
+            score.UserId = _user.Id;
             var result = _dbFacade.AddScore(score);
             return Ok(result);
         }
