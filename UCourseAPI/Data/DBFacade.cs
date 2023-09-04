@@ -1,8 +1,9 @@
-﻿using UCourseAPI.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using UCourseAPI.Models;
 
 namespace UCourseAPI.Data
 {
-    public class DBFacade
+    public class DBFacade : DbContext
     {
         private readonly IConfiguration _configuration;
         private  readonly string _connectionstring;
@@ -13,12 +14,12 @@ namespace UCourseAPI.Data
             _connectionstring = _configuration.GetConnectionString("Test");
         }
 
-        public List<Course> GetAllCourses(string? name, string? category, string? language, string? subcategory, int level, int orderby)
+        public List<CourseResponse> GetAllCourses(string? name, string? category, string? language, string? subcategory, int level, int orderby)
         {
             var bdm = new DBConnection();
             return bdm.GetAllCourses(_connectionstring, name,category,language,subcategory,level,orderby);
         }
-        public int InsertCourse( CourseInsertRequest course)
+        public int InsertCourse( CourseDbParameters course)
         {
             var dbm = new DBConnection();
             return dbm.InsertCourse(_connectionstring, course);
@@ -57,12 +58,12 @@ namespace UCourseAPI.Data
             var dbm = new DBConnection();
             return dbm.PurchaseCourse(_connectionstring, courseId, user);
         }
-        public IEnumerable<Course> GetUserCourseList( User user)
+        public IEnumerable<CourseResponse> GetUserCourseList( User user)
         {
             var dbm = new DBConnection();
             return dbm.GetUserCourseList(_connectionstring, user);
         }
-        public IEnumerable<Course> GetAuthorCourses( User user)
+        public IEnumerable<CourseResponse> GetAuthorCourses( User user)
         {
             var dbm = new DBConnection();
             return dbm.GetAuthorCourses(_connectionstring, user);

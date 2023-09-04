@@ -45,8 +45,18 @@ namespace UCourseAPI.Controllers
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
-            course.AuthorEmail = user.Email;
-            var result = _dbFacade.InsertCourse(course);
+            var _course = new CourseDbParameters()
+            {
+                Name = course.Name,
+                Categories = course.Categories,
+                Subcategories = course.Subcategories,
+                Description = course.Description,
+                Language = course.Language,
+                Level = course.Level,
+                Price = course.Price,
+                AuthorEmail = user.Email
+            };
+            var result = _dbFacade.InsertCourse(_course);
             
             return Ok(result);
         }
@@ -88,7 +98,7 @@ namespace UCourseAPI.Controllers
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
-            IEnumerable<Course> result = new List<Course>();
+            IEnumerable<CourseResponse> result = new List<CourseResponse>();
             if(user.Role=="User")
             {
                  result = _dbFacade.GetUserCourseList(user);

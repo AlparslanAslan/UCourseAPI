@@ -14,7 +14,7 @@ public class DBConnection
 {
     
     //private string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";  
-    public List<Course> GetAllCourses(string connectionString,string? name, string? category,string? language, string? subcategory, int level, int orderby)
+    public List<CourseResponse> GetAllCourses(string connectionString,string? name, string? category,string? language, string? subcategory, int level, int orderby)
     {
         var x =ConfigManager.GetConnectionString();
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
@@ -33,7 +33,7 @@ public class DBConnection
              c.id,c.name,c.price,p1.explanation categories,p2.explanation subcategories,
              
              case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,
-             c.duration,c.description,p3.explanation language, c.date,s.avgscore Score, pa.name author
+             c.description,p3.explanation language, c.date,s.avgscore Score, pa.name author
              
              from course c
              left join person pa on pa.id =c.authorId 
@@ -52,11 +52,11 @@ public class DBConnection
             {
                 query += "order by " + orderby;
             }
-            List<Course> courses = dbConnection.Query<Course>(query,parameters).AsList();
+            List<CourseResponse> courses = dbConnection.Query<CourseResponse>(query,parameters).AsList();
             return courses;
         }
     }
-    public int InsertCourse( string connectionString, CourseInsertRequest course)
+    public int InsertCourse( string connectionString, CourseDbParameters course)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
@@ -136,7 +136,7 @@ public class DBConnection
             return dbConnection.Execute(query, parameters);
         }
     }
-    public IEnumerable<Course> GetUserCourseList(string connectionString, User user)
+    public IEnumerable<CourseResponse> GetUserCourseList(string connectionString, User user)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
@@ -146,7 +146,7 @@ public class DBConnection
             select @userId=id from person where name=@Name and email=@Email
             
             
-            select c.id,c.name,a.price,c.description,c.duration,p1.explanation categories , p2.explanation subcategories, p3.explanation language
+            select c.id,c.name,a.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
             ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level
             from acquisition a
             left join course c on c.id= a.courseId 
@@ -155,10 +155,10 @@ public class DBConnection
              left join parameters p3 on p3.name='language' and p3.parno=c.language
             where userId=@userId
                 ";
-            return dbConnection.Query<Course>(query,user);
+            return dbConnection.Query<CourseResponse>(query,user);
         }
     }
-    public IEnumerable<Course> GetAuthorCourses(string connectionString, User user)
+    public IEnumerable<CourseResponse> GetAuthorCourses(string connectionString, User user)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
@@ -166,7 +166,7 @@ public class DBConnection
             declare @authorId int;
              select @authorId=id from person where  email=@Email
              
-             select  c.id,c.name,author.name author ,c.price,c.description,c.duration,p1.explanation categories , p2.explanation subcategories, p3.explanation language
+             select  c.id,c.name,author.name author ,c.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
              ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date
              from course c 
              left join parameters p1 on p1.name='categories' and p1.parno=c.categories
@@ -177,7 +177,7 @@ public class DBConnection
         
            
             ";
-            return dbConnection.Query<Course>(query, user);
+            return dbConnection.Query<CourseResponse>(query, user);
         }        
     }
     public int InsertReview(string connectionString,Review review)
