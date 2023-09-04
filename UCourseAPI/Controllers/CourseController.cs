@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using UCourseAPI.Authentication;
+using UCourseAPI.BusinessLogic;
 using UCourseAPI.Data;
 using UCourseAPI.Methods;
 using UCourseAPI.Models;
@@ -24,17 +25,17 @@ namespace UCourseAPI.Controllers
         [HttpGet("getallcourses")]
         public IActionResult GetALlCourses()
         {
-            var result =  _dbFacade.GetAllCourses(null, null, null, null, 0, 0);
+            var result =  _dbFacade.GetAllCourses(null, null, null, null, 0);
             return Ok(result);
             
         }
         
         
         [HttpGet("getcourses")]
-        [Authorize(Roles ="User")]
-        public IActionResult GetCourses(string? name,string? category,string? language,string? subcategory,int level,int orderby)
+        
+        public IActionResult GetCourses(string? name,string? category,string? language,string? subcategory,int level)
         {
-            var result = _dbFacade.GetAllCourses(name, category, language, subcategory, level, orderby);
+            var result = _dbFacade.GetAllCourses(name, category, language, subcategory, level);
             return Ok(result);
         }
         
@@ -43,6 +44,11 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "Author")]
         public IActionResult InsertCourse(CourseInsertRequest course)
         {
+            if (!InputChecker.CourseInsertIsValid(course, out string errortext))
+            {
+                return BadRequest(errortext);
+            }
+
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
             var _course = new CourseDbParameters()
@@ -57,7 +63,6 @@ namespace UCourseAPI.Controllers
                 AuthorEmail = user.Email
             };
             var result = _dbFacade.InsertCourse(_course);
-            
             return Ok(result);
         }
         
@@ -66,6 +71,10 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "Author")]
         public IActionResult UpdateCourse(CourseUpdateRequest course)
         {
+            if(!InputChecker.CourseUpdateIsValid(course, out string errortext))
+            {
+                return BadRequest(errortext);
+            }
             var result = _dbFacade.UpdateCourse(course);
             return Ok(result);
         }
@@ -79,13 +88,19 @@ namespace UCourseAPI.Controllers
             return Ok(result);
         }
         
-        
+
         [HttpPost("purchase")]
         [Authorize(Roles = "User")]
         public IActionResult PurchaseCourse(int CourseId)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
+
+            var isPurchased = InputChecker.PurchaseIsValid(user.Id, CourseId, out string errormessage);
+            if (isPurchased)
+            {
+                return BadRequest(errormessage);
+            }
             var result = _dbFacade.PurchaseCourse(CourseId, user);
             return Ok(result);
 
@@ -127,8 +142,11 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "Author")]
         public IActionResult GetCourseDetails(int courseId)
         {
-            var result =  _dbFacade.GetCourseDetails(courseId);
-            return Ok(result);
+            var courseInfo = _dbFacade.GetCourseDetails(courseId);
+            var courseReviews = _dbFacade.GetCourseReviews(courseId);
+            courseInfo.Review = courseReviews;
+
+            return Ok(courseInfo);
         }
         
         

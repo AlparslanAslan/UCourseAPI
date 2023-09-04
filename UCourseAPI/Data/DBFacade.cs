@@ -1,23 +1,24 @@
-﻿using Microsoft.EntityFrameworkCore;
-using UCourseAPI.Models;
+﻿using UCourseAPI.Models;
+using WebApi.Data;
 
 namespace UCourseAPI.Data
 {
-    public class DBFacade : DbContext
+    public class DBFacade 
     {
-        private readonly IConfiguration _configuration;
+        //private readonly IConfiguration _configuration;
         private  readonly string _connectionstring;
-
-        public DBFacade(IConfiguration configuration)
+        
+        public DBFacade(/*IConfiguration configuration*/)
         {
-            _configuration = configuration;
-            _connectionstring = _configuration.GetConnectionString("Test");
+            _connectionstring =   ConfigManager.GetConnectionString();
+            //_configuration = configuration;
+            //_connectionstring = _configuration.GetConnectionString("Test");
         }
 
-        public List<CourseResponse> GetAllCourses(string? name, string? category, string? language, string? subcategory, int level, int orderby)
+        public List<CourseResponse> GetAllCourses(string? name, string? category, string? language, string? subcategory, int level)
         {
             var bdm = new DBConnection();
-            return bdm.GetAllCourses(_connectionstring, name,category,language,subcategory,level,orderby);
+            return bdm.GetAllCourses(_connectionstring, name,category,language,subcategory,level);
         }
         public int InsertCourse( CourseDbParameters course)
         {
@@ -83,7 +84,7 @@ namespace UCourseAPI.Data
             var dbm = new DBConnection();
             return dbm.InsertReview(_connectionstring,review);
         }
-        public List<string> GetCourseDetails(int courseId)
+        public CourseDetails GetCourseDetails(int courseId)
         {
             var dbm = new DBConnection();
             return dbm.GetCourseDetails(_connectionstring, courseId);
@@ -93,6 +94,16 @@ namespace UCourseAPI.Data
             var dbm = new DBConnection();   
            return dbm.AddScore(_connectionstring, score);
         }
+        public bool IsAlreadyPurchased( int UserId,int CourseId)
+        {
+            var dbm = new DBConnection();
+            return dbm.IsAlreadyPurchased(_connectionstring, UserId, CourseId);
+        }
 
+        public List<string> GetCourseReviews(int courseId)
+        {
+            var dbm = new DBConnection();
+            return dbm.GetCourseReviews(_connectionstring, courseId);
+        }
     }
 }

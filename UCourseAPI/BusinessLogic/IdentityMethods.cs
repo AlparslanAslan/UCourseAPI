@@ -63,12 +63,7 @@ namespace UCourseAPI.Methods
             if(identity != null)
             {
                 var claims = identity.Claims;
-                return new User
-                {
-                    Name = claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value,
-                    Email = claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value,
-                    Role = claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value
-                };
+                return new DBFacade().GetUserInfo(claims?.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value);
             }
             return null;
         }

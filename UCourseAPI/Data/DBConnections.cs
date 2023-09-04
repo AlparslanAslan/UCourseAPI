@@ -14,12 +14,11 @@ public class DBConnection
 {
     
     //private string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";  
-    public List<CourseResponse> GetAllCourses(string connectionString,string? name, string? category,string? language, string? subcategory, int level, int orderby)
-    {
-        var x =ConfigManager.GetConnectionString();
+    public List<CourseResponse> GetAllCourses(string connectionString,string? name, string? category,string? language, string? subcategory, int level) 
+    { 
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
-            var parameters = new { name ='%'+name+'%', category,language, subcategory,level, orderby };
+            var parameters = new { name ='%'+name+'%', category,language, subcategory,level };
             string query = @"
             declare @categoriesnumeric int;
             declare @subcategoriesnumeric int;
@@ -48,10 +47,7 @@ public class DBConnection
              level=isnull(nullif(@level,0),level) and
              language = isnull(nullif(@languagenumeric,0),language)
             ";
-            if(orderby != 0)
-            {
-                query += "order by " + orderby;
-            }
+          
             List<CourseResponse> courses = dbConnection.Query<CourseResponse>(query,parameters).AsList();
             return courses;
         }
@@ -196,15 +192,22 @@ public class DBConnection
             return dbConnection.Execute(query, review);
         }
     }
-    public List<string> GetCourseDetails(string connectionString,int courseId)
+    public CourseDetails GetCourseDetails(string connectionString,int courseId)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
             var paremeters = new { courseId };
             var query = @"
-             select review from review where courseId=@courseId
+             select  c.id,c.name,author.name author ,c.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
+               ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date
+               from course c 
+               left join parameters p1 on p1.name='categories' and p1.parno=c.categories
+               left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
+               left join parameters p3 on p3.name='language' and p3.parno=c.language
+               left join person author on author.id=c.authorId 
+               where c.id=@CourseId
              ";
-            return dbConnection.Query<string>(query, paremeters).AsList();
+            return dbConnection.QueryFirstOrDefault<CourseDetails>(query, paremeters);
         }
 
     }
@@ -221,5 +224,25 @@ public class DBConnection
             return dbConnection.Execute(query, score);
         }
     }
+    public bool IsAlreadyPurchased(string connectionString, int UserId,int CourseId)
+    {
+        var parameters = new { UserId, CourseId };
+        using (IDbConnection dbConnection= new SqlConnection(connectionString))
+        {
+            var query = @" select 1 from acquisition where courseId=@CourseId and userId=@UserId";
+            return dbConnection.Query<bool>(query, parameters).FirstOrDefault();
+        }
+    }
 
+    public List<string> GetCourseReviews(string connectionString, int courseId)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionString))
+        {
+            var paremeters = new { courseId };
+            var query = @"
+             select review from review where courseId=@courseId
+             ";
+            return dbConnection.Query<string>(query, paremeters).AsList();
+        }
+    }
 }
