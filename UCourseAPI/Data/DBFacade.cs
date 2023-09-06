@@ -105,5 +105,10 @@ namespace UCourseAPI.Data
             var dbm = new DBConnection();
             return dbm.GetCourseReviews(_connectionstring, courseId);
         }
+        public bool IsCourseBelongToAuthor( int CourseId, int UserId)
+        {
+            var dbm = new DBConnection();
+            return dbm.IsCourseBelongToAuthor(_connectionstring, CourseId, UserId);
+        }
     }
 }

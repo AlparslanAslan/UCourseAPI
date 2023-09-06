@@ -4,6 +4,7 @@ using UCourseAPI.Methods;
 using Microsoft.AspNetCore.Authorization;
 using UCourseAPI.Data;
 using System.Security.Claims;
+using UCourseAPI.BusinessLogic;
 
 namespace UCourseAPI.Controllers
 {
@@ -20,8 +21,12 @@ namespace UCourseAPI.Controllers
             _dBFacade = dBFacade;
         }
         [HttpPost("register")]
-        public int Register(UserRegister dtouser)
+        public IActionResult Register(UserRegister dtouser)
         {
+            if(!InputChecker.IsUserRegisterInputValid(dtouser, out string errormessage))
+            {
+                return NotFound(errormessage);
+            }
             IdentityMethods.CreatePasswordHash(dtouser.Password,out byte[] passwordHash,out byte[] passwordSalt);
             var _user = new UserResponse()
             {
@@ -32,16 +37,11 @@ namespace UCourseAPI.Controllers
                 PasswordSalt = passwordSalt,
                 Email = dtouser.Email
             };
-            //user.Name = dtouser.Name;
-            //user.Description = dtouser.Description;
-            //user.Role = dtouser.Role;
-            //user.PasswordHash = passwordHash;
-            //user.PasswordSalt = passwordSalt;
-            //user.Email = dtouser.Email;
-            
-            return _dBFacade.UserRegister(_user);
+            return Ok(_dBFacade.UserRegister(_user));
 
         }
+        
+        
         [HttpPost("login")]
         public IActionResult Login(LoginUser loginUser)
         {
@@ -61,6 +61,8 @@ namespace UCourseAPI.Controllers
 
 
         }
+       
+        
         [HttpGet("UserInfo")]
         public IActionResult GetUserInfo()
         {
@@ -72,18 +74,24 @@ namespace UCourseAPI.Controllers
         [HttpPost("UpdateUserInfo")]
         public IActionResult UpdateUserInfo(UserInfoRequest dtouser)
         {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var _user = IdentityMethods.GetCurrentUser(identity);
+            if(!InputChecker.IsUserInfoUpdateValid(dtouser,_user.Role,out string errormessage))
+            {
+                return BadRequest(errormessage);
+            }
             var newuser = new UserResponse()
             {
                 Name = dtouser.Name,
                 Email = dtouser.Email,
                 Description = dtouser.Description
             };
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var _user = IdentityMethods.GetCurrentUser(identity);
             int result = _dBFacade.UpdateUserInfo(_user, newuser);
             var token = IdentityMethods.CreateToken(newuser, _configuration);
             return Ok(token);
         }
+       
+        
         [HttpPost("updateuserpassword")]
         public IActionResult UpdateUserPassword(UserPasswordRequest userPassword)
         {
@@ -99,7 +107,10 @@ namespace UCourseAPI.Controllers
             {
                 return BadRequest("Password is incorrect");
             }
-
+            if(! InputChecker.IsPasswordValid(userPassword.NewPassword,out string errormessage))
+            {
+                return BadRequest(errormessage);
+            }
             IdentityMethods.CreatePasswordHash(userPassword.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
 
             var newuser = new UserResponse();

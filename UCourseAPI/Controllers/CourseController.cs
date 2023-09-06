@@ -33,7 +33,6 @@ namespace UCourseAPI.Controllers
         
         
         [HttpGet("getcourses")]
-        
         public IActionResult GetCourses(string? name,string? category,string? language,string? subcategory,int level)
         {
             var result = _dbFacade.GetAllCourses(name, category, language, subcategory, level);
@@ -72,7 +71,10 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "Author")]
         public IActionResult UpdateCourse(CourseUpdateRequest course)
         {
-            if(!InputChecker.CourseUpdateIsValid(course, out string errortext))
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var user = IdentityMethods.GetCurrentUser(identity);
+
+            if (!InputChecker.CourseUpdateIsValid(course,user.Id,out string errortext))
             {
                 return BadRequest(errortext);
             }
@@ -85,7 +87,13 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "Author")]
         public IActionResult DeleteCourse(int courseid)
         {
-           return _dbFacade.DeleteCourse(courseid) == 1 ? Ok() : NoContent(); 
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var user = IdentityMethods.GetCurrentUser(identity);
+            if (!InputChecker.CourseDeleteIsValid(courseid, user.Id, out string errortext))
+            {
+                return BadRequest(errortext);
+            }
+            return _dbFacade.DeleteCourse(courseid) == 1 ? Ok() : NoContent(); 
         }
         
 
@@ -113,19 +121,24 @@ namespace UCourseAPI.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentPerson(identity);
             var result = user.GetCourses();
-            return result.IsNullOrEmpty() == true ? NotFound() : Ok();
+            return result.IsNullOrEmpty() == true ? NotFound() : Ok(result);
         }
         
         
         [HttpPost("insertreview")]
         [Authorize(Roles = "User")]
-        public IActionResult InsertReview(Review review)
+        public IActionResult InsertReview(ReviewInsertRequest request)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var _user = IdentityMethods.GetCurrentUser(identity);
-            review.UserId  = _user.Id;
+            var review = new Review()
+            {
+                CourseId = request.CourseId,
+                ReviewText = request.ReviewText,
+                UserId = _user.Id                
+            };
             var result = _dbFacade.InsertReview(_user, review);
-            return Ok(result);
+            return result==1 ? Ok(result) : NoContent();
         }
         
         
@@ -136,8 +149,7 @@ namespace UCourseAPI.Controllers
             var courseInfo = _dbFacade.GetCourseDetails(courseId);
             var courseReviews = _dbFacade.GetCourseReviews(courseId);
             courseInfo.Review = courseReviews;
-
-            return Ok(courseInfo);
+            return courseReviews.Count > 0 ? Ok(courseInfo): NotFound();    
         }
         
         

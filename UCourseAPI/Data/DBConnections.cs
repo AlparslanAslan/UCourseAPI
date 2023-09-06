@@ -234,4 +234,16 @@ public class DBConnection
             return dbConnection.Query<string>(query, paremeters).AsList();
         }
     }
+    public bool IsCourseBelongToAuthor(string connectionString,int CourseId , int UserId)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionString))
+        {
+            var parameters = new { CourseId, UserId };
+            var query = @"if
+            ( @UserId = (select authorId from course where id=@CourseId) )
+            select 1
+            else select 0";
+            return dbConnection.QueryFirstOrDefault<int>(query)==1 ?  true : false;
+        }
+    }
 }
