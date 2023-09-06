@@ -9,7 +9,7 @@ namespace UCourseAPI.Data
     public  class IdentityData
     {
         //private   string connectionString = "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;";
-        public   int UserRegister(string connectionString, User user)
+        public   int UserRegister(string connectionString, UserResponse user)
         {
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
@@ -28,16 +28,16 @@ namespace UCourseAPI.Data
                 return dbConnection.QueryFirstOrDefault<int>(query, user);
             }
         } 
-        public  User GetUserInfo(string connectionString, string email)
+        public  UserResponse GetUserInfo(string connectionString, string email)
         {
             var parameters = new { email };
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {
                 string query = @"select id,name,passwordhash,passwordsalt,role Role,email Email,description Description from person where email=@email ";
-                return dbConnection.QueryFirstOrDefault<User>(query, parameters);
+                return dbConnection.QueryFirstOrDefault<UserResponse>(query, parameters);
             }
         }
-        public int UpdateUserInfo(string connectionString,User oldUser, User NewUser)
+        public int UpdateUserInfo(string connectionString,UserResponse oldUser, UserResponse NewUser)
         {
             var parameters = new { oldname = oldUser.Name, oldemail=oldUser.Email, 
                 newname=NewUser.Name, newemail=NewUser.Email,description=NewUser.Description
@@ -51,7 +51,7 @@ namespace UCourseAPI.Data
                 return dbConnection.Execute(query, parameters );
             }
         }
-        public int UpdateUserPassword(string connectionString, User user)
+        public int UpdateUserPassword(string connectionString, UserResponse user)
         {
             using (IDbConnection dbConnection = new SqlConnection(connectionString))
             {

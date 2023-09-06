@@ -11,7 +11,7 @@ namespace UCourseAPI.Controllers
     [Route("[controller]")]
     public class IdentityController : ControllerBase  
     {
-        public static User user = new User();
+        public static UserResponse user = new UserResponse();
         public readonly IConfiguration _configuration;
         private readonly DBFacade _dBFacade;
         public IdentityController(IConfiguration configuration,DBFacade dBFacade)
@@ -23,7 +23,7 @@ namespace UCourseAPI.Controllers
         public int Register(UserRegister dtouser)
         {
             IdentityMethods.CreatePasswordHash(dtouser.Password,out byte[] passwordHash,out byte[] passwordSalt);
-            var _user = new User()
+            var _user = new UserResponse()
             {
                 Name = dtouser.Name,
                 Description = dtouser.Description,
@@ -54,7 +54,7 @@ namespace UCourseAPI.Controllers
             {
                 return BadRequest("Password is incorrect");
             }
-            User user = _dBFacade.GetUserInfo( loginUser.Email); 
+            UserResponse user = _dBFacade.GetUserInfo( loginUser.Email); 
 
             var token = IdentityMethods.CreateToken(user,_configuration);
             return Ok(token);
@@ -72,7 +72,7 @@ namespace UCourseAPI.Controllers
         [HttpPost("UpdateUserInfo")]
         public IActionResult UpdateUserInfo(UserInfoRequest dtouser)
         {
-            var newuser = new User()
+            var newuser = new UserResponse()
             {
                 Name = dtouser.Name,
                 Email = dtouser.Email,
@@ -102,7 +102,7 @@ namespace UCourseAPI.Controllers
 
             IdentityMethods.CreatePasswordHash(userPassword.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
 
-            var newuser = new User();
+            var newuser = new UserResponse();
             newuser.Email = dtoUser.Email;
             newuser.PasswordHash = passwordHash;
             newuser.PasswordSalt = passwordSalt;

@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using UCourseAPI.BusinessLogic;
 using UCourseAPI.Data;
 using UCourseAPI.Models;
 
@@ -35,7 +36,7 @@ namespace UCourseAPI.Methods
             }
             return passwordHash.SequenceEqual(_user.PasswordHash);
         }
-        public static string CreateToken(User user,IConfiguration configuration)
+        public static string CreateToken(UserResponse user,IConfiguration configuration)
         {
             var claims = new List<Claim>
             {
@@ -58,14 +59,37 @@ namespace UCourseAPI.Methods
             return jwt;
             
         }
-        public static User GetCurrentUser(ClaimsIdentity identity)
+        public static UserResponse GetCurrentUser(ClaimsIdentity identity)
         {
-            if(identity != null)
+            
+            if (identity != null)
             {
                 var claims = identity.Claims;
                 return new DBFacade().GetUserInfo(claims?.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value);
             }
             return null;
+
+            
+        }
+        public static IUser GetCurrentPerson(ClaimsIdentity identity)
+        {
+
+            if (identity != null)
+            {
+                var claims = identity.Claims;
+                var _user = new DBFacade().GetUserInfo(claims?.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value);
+                if (claims?.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value == "Author")
+                {
+                    return new Author() { Id = _user.Id, Email = _user.Email };
+                }
+                else
+                {
+                    return new User() { Id = _user.Id, Email = _user.Email };
+                }
+            }
+            return null;
+
+
         }
     }
 }

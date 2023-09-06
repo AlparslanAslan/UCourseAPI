@@ -113,7 +113,7 @@ public class DBConnection
             return dbConnection.Execute(query, parameters);
         }
     }
-    public int PurchaseCourse(string connectionString, int courseId , User user)
+    public int PurchaseCourse(string connectionString, int courseId , UserResponse user)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
@@ -129,10 +129,11 @@ public class DBConnection
             return dbConnection.Execute(query, parameters);
         }
     }
-    public IEnumerable<CourseResponse> GetUserCourseList(string connectionString, User user)
+    public IEnumerable<CourseResponse> GetUserCourseList(string connectionString, int Id)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
+            var parameters = new {Id};
             string query = @"
 
             
@@ -145,11 +146,12 @@ public class DBConnection
              left join parameters p3 on p3.name='language' and p3.parno=c.language
             where userId=@Id
                 ";
-            return dbConnection.Query<CourseResponse>(query,user);
+            return dbConnection.Query<CourseResponse>(query, parameters);
         }
     }
-    public IEnumerable<CourseResponse> GetAuthorCourses(string connectionString, User user)
+    public IEnumerable<CourseResponse> GetAuthorCourses(string connectionString, int Id)
     {
+        var parmeters = new  { Id };
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
         {
             var query = @"
@@ -165,7 +167,7 @@ public class DBConnection
         
            
             ";
-            return dbConnection.Query<CourseResponse>(query, user);
+            return dbConnection.Query<CourseResponse>(query, parmeters);
         }        
     }
     public int InsertReview(string connectionString,Review review)

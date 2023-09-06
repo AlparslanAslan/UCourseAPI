@@ -52,7 +52,7 @@ namespace UCourseAPI.BusinessLogic
             }
 
         }
-        public static bool PurchaseIsValid(int UserId,int CourseId,out string errormessage)
+        public static bool IsAlreadyPurchased(int UserId,int CourseId,out string errormessage)
         {
             var result = new DBFacade().IsAlreadyPurchased(UserId, CourseId);
             if (result)

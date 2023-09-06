@@ -38,7 +38,7 @@ namespace UCourseAPI.Data
             return dbm.DeleteCourse(_connectionstring, id);
 
         }
-        public int UserRegister( User user)
+        public int UserRegister( UserResponse user)
         {
             var dbm = new IdentityData();
             return dbm.UserRegister(_connectionstring, user);
@@ -49,37 +49,37 @@ namespace UCourseAPI.Data
             var dbm = new IdentityData();
             return dbm.IsUserExist(_connectionstring, user);
         }
-        public User GetUserInfo( string email)
+        public UserResponse GetUserInfo( string email)
         {
             var dbm = new IdentityData();
             return dbm.GetUserInfo(_connectionstring,email);
         }
-        public int PurchaseCourse(int courseId, User user)
+        public int PurchaseCourse(int courseId, UserResponse user)
         {
             var dbm = new DBConnection();
             return dbm.PurchaseCourse(_connectionstring, courseId, user);
         }
-        public IEnumerable<CourseResponse> GetUserCourseList( User user)
+        public IEnumerable<CourseResponse> GetUserCourseList( int  userId)
         {
             var dbm = new DBConnection();
-            return dbm.GetUserCourseList(_connectionstring, user);
+            return dbm.GetUserCourseList(_connectionstring, userId);
         }
-        public IEnumerable<CourseResponse> GetAuthorCourses( User user)
+        public IEnumerable<CourseResponse> GetAuthorCourses(int Id)
         {
             var dbm = new DBConnection();
-            return dbm.GetAuthorCourses(_connectionstring, user);
+            return dbm.GetAuthorCourses(_connectionstring, Id);
         }
-        public int UpdateUserInfo( User oldUser, User newUser)
+        public int UpdateUserInfo( UserResponse oldUser, UserResponse newUser)
         {
             var dbm = new IdentityData();
             return dbm.UpdateUserInfo(_connectionstring, oldUser, newUser);
         }
-        public int UpdateUserPassword(User user)
+        public int UpdateUserPassword(UserResponse user)
         {
             var dbm = new IdentityData();
             return dbm.UpdateUserPassword(_connectionstring, user);
         }
-        public int InsertReview( User user, Review review)
+        public int InsertReview( UserResponse user, Review review)
         {
             var dbm = new DBConnection();
             return dbm.InsertReview(_connectionstring,review);

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using UCourseAPI.Authentication;
 using UCourseAPI.BusinessLogic;
@@ -62,8 +63,8 @@ namespace UCourseAPI.Controllers
                 Price = course.Price,
                 AuthorId = user.Id
             };
-            var result = _dbFacade.InsertCourse(_course);
-            return Ok(result);
+            
+            return _dbFacade.InsertCourse(_course) == 1 ? Ok() : NoContent();
         }
         
         
@@ -75,8 +76,8 @@ namespace UCourseAPI.Controllers
             {
                 return BadRequest(errortext);
             }
-            var result = _dbFacade.UpdateCourse(course);
-            return Ok(result);
+            return _dbFacade.UpdateCourse(course)==1 ? Ok() : NoContent();
+            
         }
         
         
@@ -84,8 +85,7 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "Author")]
         public IActionResult DeleteCourse(int courseid)
         {
-            var result = _dbFacade.DeleteCourse(courseid);
-            return Ok(result);
+           return _dbFacade.DeleteCourse(courseid) == 1 ? Ok() : NoContent(); 
         }
         
 
@@ -96,14 +96,13 @@ namespace UCourseAPI.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
 
-            var isPurchased = InputChecker.PurchaseIsValid(user.Id, CourseId, out string errormessage);
+            var isPurchased = InputChecker.IsAlreadyPurchased(user.Id, CourseId, out string errormessage);
             if (isPurchased)
             {
                 return BadRequest(errormessage);
             }
-            var result = _dbFacade.PurchaseCourse(CourseId, user);
-            return Ok(result);
-
+           
+            return _dbFacade.PurchaseCourse(CourseId, user) == 1 ? Ok() : NoContent(); 
         }
         
         
@@ -112,17 +111,9 @@ namespace UCourseAPI.Controllers
         public IActionResult GetUserCourses()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var user = IdentityMethods.GetCurrentUser(identity);
-            IEnumerable<CourseResponse> result = new List<CourseResponse>();
-            if(user.Role=="User")
-            {
-                 result = _dbFacade.GetUserCourseList(user);
-            }
-            else if(user.Role == "Author")
-            {
-                 result = _dbFacade.GetAuthorCourses(user);
-            }
-            return Ok(result);
+            var user = IdentityMethods.GetCurrentPerson(identity);
+            var result = user.GetCourses();
+            return result.IsNullOrEmpty() == true ? NotFound() : Ok();
         }
         
         
