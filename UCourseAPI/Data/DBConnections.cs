@@ -8,6 +8,8 @@ using System.Data.Common;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using WebApi.Data;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using UCourseAPI.BusinessLogic;
 
 namespace UCourseAPI.Data;
 public class DBConnection 
@@ -67,7 +69,8 @@ public class DBConnection
              
              if(@categoriesnumeric is not null or @languagenumeric is not null or @subcategoriesnumeric is not null)
              insert into course (name,authorId,price,categories,subcategories,level,description,language,date)
-            values(@name,@authorId,@price,@categoriesnumeric,@subcategoriesnumeric,@level,@description,@languagenumeric,GETDATE())
+             values(@name,@authorId,@price,@categoriesnumeric,@subcategoriesnumeric,@level,@description,@languagenumeric,GETDATE())
+             insert into document values('PDF',@document,null,1,GETDATE())
             
             ";
             return dbConnection.Execute(query, course);
@@ -243,7 +246,20 @@ public class DBConnection
             ( @UserId = (select authorId from course where id=@CourseId) )
             select 1
             else select 0";
-            return dbConnection.QueryFirstOrDefault<int>(query)==1 ?  true : false;
+            return dbConnection.QueryFirstOrDefault<int>(query, parameters) ==1 ?  true : false;
+        }
+    }
+
+    public bool IsAuthorHasCourseSameName(string connectionstring, string courseName, int userId)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionstring))
+        {
+            var parameters = new { courseName, userId };
+            var query = @"if
+            (select 1 from course where authorId=@userId and name =@courseName )=1
+            select 1
+            else select 0";
+            return dbConnection.QueryFirstOrDefault<int>(query, parameters) == 1 ? true : false;
         }
     }
 }

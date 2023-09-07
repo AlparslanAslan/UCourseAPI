@@ -10,5 +10,7 @@ namespace UCourseAPI.Models
         public string Description { get; set; }
         public string Language { get; set; }
         public int AuthorId { get; set; } 
+        public byte[] Document { get; set; }
+        
     }
 }

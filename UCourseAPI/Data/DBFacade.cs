@@ -1,4 +1,5 @@
-﻿using UCourseAPI.Models;
+﻿using UCourseAPI.BusinessLogic;
+using UCourseAPI.Models;
 using WebApi.Data;
 
 namespace UCourseAPI.Data
@@ -10,7 +11,7 @@ namespace UCourseAPI.Data
         
         public DBFacade(/*IConfiguration configuration*/)
         {
-            _connectionstring =   ConfigManager.GetConnectionString();
+            _connectionstring = String.IsNullOrEmpty(ConfigManager.GetConnectionString()) ? "Server=LAPTOP-D8QC5NMV;Database=test;Integrated Security=True;" :  ConfigManager.GetConnectionString();
             //_configuration = configuration;
             //_connectionstring = _configuration.GetConnectionString("Test");
         }
@@ -109,6 +110,12 @@ namespace UCourseAPI.Data
         {
             var dbm = new DBConnection();
             return dbm.IsCourseBelongToAuthor(_connectionstring, CourseId, UserId);
+        }
+
+        public bool IsAuthorHasCourseSameName(string courseName, int userId)
+        {
+            var dbm = new DBConnection();
+            return dbm.IsAuthorHasCourseSameName(_connectionstring, courseName, userId);
         }
     }
 }

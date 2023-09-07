@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using Azure.Core;
+using System.Text.RegularExpressions;
 using UCourseAPI.Data;
 using UCourseAPI.Models;
 
@@ -8,7 +9,17 @@ namespace UCourseAPI.BusinessLogic
     {
         public static bool CourseInsertIsValid(CourseInsertRequest insertRequest ,out string errormessage)
         {
-            if (insertRequest.Name.Length > 200)
+            if (String.IsNullOrEmpty(insertRequest.Name))
+            {
+                errormessage = "Course name can not be empty! ";
+                return false;
+            }
+            else if (String.IsNullOrEmpty(insertRequest.Description))
+            {
+                errormessage = "Course name can not be empty! ";
+                return false;
+            }
+            else if (insertRequest.Name.Length > 200)
             {
                 errormessage = "Course name couldn't be longer than 200 letters!";
                 return false;
@@ -51,6 +62,11 @@ namespace UCourseAPI.BusinessLogic
                 errormessage = "Author can not update the course that doesn't belong to him!";
                 return false;
             }
+            else if (IsAuthorHasCourseSameName(request.Name, userId))
+            {
+                errormessage = String.Concat("There is already a course named ", request.Name);
+                return false;
+            }
             else
             {
                 errormessage = "";
@@ -85,6 +101,11 @@ namespace UCourseAPI.BusinessLogic
         {
             var dmf = new DBFacade();
             return dmf.IsCourseBelongToAuthor(courseId, userId);
+        }
+        public static bool IsAuthorHasCourseSameName(string courseName , int userId)
+        {
+            var dmf = new DBFacade();
+            return dmf.IsAuthorHasCourseSameName(courseName, userId);
         }
         public static bool IsUserRegisterInputValid(UserRegister user , out string errormessage)
         {

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Security.Claims;
 using UCourseAPI.Authentication;
 using UCourseAPI.BusinessLogic;
@@ -38,12 +39,21 @@ namespace UCourseAPI.Controllers
             var result = _dbFacade.GetAllCourses(name, category, language, subcategory, level);
             return Ok(result);
         }
-        
-        
+
+
         [HttpPost("InsertCourse")]
-        [Authorize(Roles = "Author")]
-        public IActionResult InsertCourse(CourseInsertRequest course)
+       // [Authorize(Roles = "Author")]
+        public async Task<IActionResult> InsertCourseAsync([FromForm] CourseInsertRequest course)
         {
+            byte[] fileData = null;
+
+            using (var memoryStream = new MemoryStream())
+            {
+                await course.Files.CopyToAsync(memoryStream);
+                fileData = memoryStream.ToArray();
+            }
+
+
             if (!InputChecker.CourseInsertIsValid(course, out string errortext))
             {
                 return BadRequest(errortext);
@@ -60,7 +70,8 @@ namespace UCourseAPI.Controllers
                 Language = course.Language,
                 Level = course.Level,
                 Price = course.Price,
-                AuthorId = user.Id
+                //AuthorId = user.Id,
+                Document = fileData
             };
             
             return _dbFacade.InsertCourse(_course) == 1 ? Ok() : NoContent();

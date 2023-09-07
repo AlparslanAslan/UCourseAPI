@@ -20,6 +20,7 @@ namespace UCourseAPI.Controllers
             _configuration = configuration;
             _dBFacade = dBFacade;
         }
+       
         [HttpPost("register")]
         public IActionResult Register(UserRegister dtouser)
         {
@@ -71,6 +72,7 @@ namespace UCourseAPI.Controllers
             return Ok(_dBFacade.GetUserInfo(user.Email));
         }
 
+      
         [HttpPost("UpdateUserInfo")]
         public IActionResult UpdateUserInfo(UserInfoRequest dtouser)
         {

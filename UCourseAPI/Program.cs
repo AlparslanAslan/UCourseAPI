@@ -35,6 +35,7 @@ builder.Services.AddAuthentication(
         };
     }) ;
 builder.Services.AddSingleton<DBFacade>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", builder =>
