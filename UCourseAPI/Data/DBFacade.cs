@@ -123,5 +123,11 @@ namespace UCourseAPI.Data
             var dbm = new DBConnection();
             return dbm.Approve(_connectionstring, courseId, approved);
         }
+
+        public List<Document> GetCourseDocuments(int courseId)
+        {
+           var dbm = new DBConnection();
+            return dbm.GetCourseDocuments(_connectionstring, courseId);
+        }
     }
 }

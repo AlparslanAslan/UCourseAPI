@@ -134,8 +134,20 @@ namespace UCourseAPI.Controllers
             var result = user.GetCourses();
             return result.IsNullOrEmpty() == true ? NotFound() : Ok(result);
         }
-        
-        
+
+        [HttpGet("document")]
+        [Authorize(Roles = "User")]
+        public IActionResult GetUserCourseDocument(int courseId)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var user = IdentityMethods.GetCurrentPerson(identity);
+            List<Document> documents = new List<Document>();
+            if(InputChecker.IsAlreadyPurchased(user.Id, courseId, out string message))
+                documents = _dbFacade.GetCourseDocuments(courseId);
+            return documents.IsNullOrEmpty() == true ? NotFound() : Ok(documents);
+        }
+
+
         [HttpPost("insertreview")]
         [Authorize(Roles = "User")]
         public IActionResult InsertReview(ReviewInsertRequest request)

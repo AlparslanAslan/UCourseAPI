@@ -47,7 +47,8 @@ public class DBConnection
              categories= isnull(nullif(@categoriesnumeric,0),categories)  and
              subcategories=isnull(nullif(@subcategoriesnumeric,0),subcategories) and
              level=isnull(nullif(@level,0),level) and
-             language = isnull(nullif(@languagenumeric,0),language)
+             language = isnull(nullif(@languagenumeric,0),language) and
+             c.approved=1 
             ";
           
             List<CourseResponse> courses = dbConnection.Query<CourseResponse>(query,parameters).AsList();
@@ -148,6 +149,7 @@ public class DBConnection
              left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
              left join parameters p3 on p3.name='language' and p3.parno=c.language
             where userId=@Id
+            and c.approved=1
                 ";
             return dbConnection.Query<CourseResponse>(query, parameters);
         }
@@ -160,15 +162,15 @@ public class DBConnection
             var query = @"
              
              select  c.id,c.name,author.name author ,c.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
-             ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date
+             ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date , a.number_of_purchase
              from course c 
              left join parameters p1 on p1.name='categories' and p1.parno=c.categories
              left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
              left join parameters p3 on p3.name='language' and p3.parno=c.language
              left join person author on author.id=c.authorId 
-             where authorId=@Id
-        
-           
+             left join (select courseId,COUNT(*) number_of_purchase from acquisition group by courseId) a on a.courseId=c.id
+             where authorId=@authorId
+            and c.approved=1
             ";
             return dbConnection.Query<CourseResponse>(query, parmeters);
         }        
@@ -225,7 +227,6 @@ public class DBConnection
             return dbConnection.Query<bool>(query, parameters).FirstOrDefault();
         }
     }
-
     public List<string> GetCourseReviews(string connectionString, int courseId)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionString))
@@ -249,7 +250,6 @@ public class DBConnection
             return dbConnection.QueryFirstOrDefault<int>(query, parameters) ==1 ?  true : false;
         }
     }
-
     public bool IsAuthorHasCourseSameName(string connectionstring, string courseName, int userId)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionstring))
@@ -262,7 +262,6 @@ public class DBConnection
             return dbConnection.QueryFirstOrDefault<int>(query, parameters) == 1 ? true : false;
         }
     }
-
     public int Approve(string connectionstring, int courseId, bool approved)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionstring))
@@ -270,6 +269,15 @@ public class DBConnection
             var parameters = new { courseId, approved = approved ? 1 : 0 };
             var query = @"update course set approved=@approved where corseId=@courseId";
             return dbConnection.Execute(query, parameters);
+        }
+    }
+    public List<Document> GetCourseDocuments(string connectionstring,int courseId)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionstring))
+        {
+            var parameters = new { courseId };
+            var query = @"select id,style type,document documentdata,lecture from document where courseId=@courseId";
+            return dbConnection.Query<Document>(query, parameters).ToList();
         }
     }
 }
