@@ -117,5 +117,11 @@ namespace UCourseAPI.Data
             var dbm = new DBConnection();
             return dbm.IsAuthorHasCourseSameName(_connectionstring, courseName, userId);
         }
+
+        public int Approve(int courseId, bool approved)
+        {
+            var dbm = new DBConnection();
+            return dbm.Approve(_connectionstring, courseId, approved);
+        }
     }
 }

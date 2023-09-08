@@ -47,6 +47,7 @@ namespace UCourseAPI.BusinessLogic
                 errormessage = "Course name couldn't be longer than 200 letters!";
                 return false;
             }
+
             else if (request.Price < 0)
             {
                 errormessage = "Price can not be negatif!";
@@ -65,6 +66,16 @@ namespace UCourseAPI.BusinessLogic
             else if (IsAuthorHasCourseSameName(request.Name, userId))
             {
                 errormessage = String.Concat("There is already a course named ", request.Name);
+                return false;
+            }
+            else if (String.IsNullOrEmpty(request.Name))
+            {
+                errormessage = "Course Name cannot be empty!";
+                return false;
+            }
+            else if (String.IsNullOrEmpty(request.Description))
+            {
+                errormessage = "Course Description cannot be empty!";
                 return false;
             }
             else

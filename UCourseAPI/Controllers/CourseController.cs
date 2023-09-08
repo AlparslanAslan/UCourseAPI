@@ -174,5 +174,12 @@ namespace UCourseAPI.Controllers
             var result = _dbFacade.AddScore(score);
             return Ok(result);
         }
+
+        [HttpPost("approve")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult ApproveCourse(int courseId,bool approved)
+        {
+            return _dbFacade.Approve(courseId, approved) == 1 ? Ok() : NoContent();
+        }
     }
 }

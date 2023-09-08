@@ -262,4 +262,14 @@ public class DBConnection
             return dbConnection.QueryFirstOrDefault<int>(query, parameters) == 1 ? true : false;
         }
     }
+
+    public int Approve(string connectionstring, int courseId, bool approved)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionstring))
+        {
+            var parameters = new { courseId, approved = approved ? 1 : 0 };
+            var query = @"update course set approved=@approved where corseId=@courseId";
+            return dbConnection.Execute(query, parameters);
+        }
+    }
 }
