@@ -5,6 +5,7 @@ using Serilog;
 using UCourseAPI.Authentication;
 using UCourseAPI.Data;
 using WebApi.Data;
+using UCourseAPI.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -14,6 +15,7 @@ builder.Services.AddControllers(/*x=> x.Filters.Add<ApiAuthFilter>()*/);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 //builder.Services.AddScoped<ApiAuthFilter>();
 builder.Services.AddAuthentication(
     x =>{
@@ -36,6 +38,8 @@ builder.Services.AddAuthentication(
         };
     }) ;
 builder.Services.AddSingleton<DBFacade>();
+builder.Services.AddSingleton<UCourseAPI.Repositories.UCourseDbContext>();
+builder.Services.AddSingleton<ICourseRepo,UCourseRepo>();
 
 builder.Services.AddCors(options =>
 {

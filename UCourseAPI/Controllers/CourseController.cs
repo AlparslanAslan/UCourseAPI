@@ -9,6 +9,8 @@ using UCourseAPI.Data;
 using UCourseAPI.Methods;
 using UCourseAPI.Models;
 using Serilog;
+using Microsoft.EntityFrameworkCore;
+using UCourseAPI.Repositories;
 
 namespace UCourseAPI.Controllers
 {
@@ -18,8 +20,10 @@ namespace UCourseAPI.Controllers
     {
         private readonly ILogger<CourseController> _logger;
         private readonly DBFacade _dbFacade;
-        public CourseController(ILogger<CourseController> logger, DBFacade dbFacade)
+        private readonly ICourseRepo _courseRepo;
+        public CourseController(ILogger<CourseController> logger, DBFacade dbFacade,ICourseRepo courseRepo)
         {
+            _courseRepo = courseRepo;
             _logger = logger;
             _dbFacade = dbFacade;
         }
@@ -28,9 +32,11 @@ namespace UCourseAPI.Controllers
         [HttpGet("getallcourses")]
         public IActionResult GetALlCourses()
         {
-            var result =  _dbFacade.GetAllCourses(null, null, null, null, 0);
-            Log.Information<List<CourseResponse>>("{@result}",result); 
+            var result  = _courseRepo.GetAll();
             return Ok(result);
+            //var result =  _dbFacade.GetAllCourses(null, null, null, null, 0);
+            //Log.Information<List<CourseResponse>>("{@result}",result); 
+            //return Ok(result);
             
         }
         
@@ -44,7 +50,7 @@ namespace UCourseAPI.Controllers
 
 
         [HttpPost("InsertCourse")]
-       // [Authorize(Roles = "Author")]
+        [Authorize(Roles = "Author")]
         public async Task<IActionResult> InsertCourseAsync([FromForm] CourseInsertRequest course)
         {
             byte[] fileData = null;
