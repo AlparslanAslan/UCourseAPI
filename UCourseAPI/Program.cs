@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Serilog;
 using UCourseAPI.Authentication;
 using UCourseAPI.Data;
 using WebApi.Data;
@@ -45,6 +46,11 @@ builder.Services.AddCors(options =>
         .AllowAnyHeader();
     }); 
 });
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Hour)
+    .CreateLogger();
 
 ConfigManager.Initialize(config);
 

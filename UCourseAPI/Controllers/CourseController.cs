@@ -8,6 +8,7 @@ using UCourseAPI.BusinessLogic;
 using UCourseAPI.Data;
 using UCourseAPI.Methods;
 using UCourseAPI.Models;
+using Serilog;
 
 namespace UCourseAPI.Controllers
 {
@@ -28,6 +29,7 @@ namespace UCourseAPI.Controllers
         public IActionResult GetALlCourses()
         {
             var result =  _dbFacade.GetAllCourses(null, null, null, null, 0);
+            Log.Information<List<CourseResponse>>("{@result}",result); 
             return Ok(result);
             
         }
