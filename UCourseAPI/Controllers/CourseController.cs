@@ -33,14 +33,12 @@ namespace UCourseAPI.Controllers
         public IActionResult GetALlCourses()
         {
             var result  = _courseRepo.GetAll();
+            Log.Information<List<CourseResponse>>("{@result}",result);
             return Ok(result);
-            //var result =  _dbFacade.GetAllCourses(null, null, null, null, 0);
-            //Log.Information<List<CourseResponse>>("{@result}",result); 
-            //return Ok(result);
-            
+
         }
-        
-        
+
+
         [HttpGet("getcourses")]
         public IActionResult GetCourses(string? name,string? category,string? language,string? subcategory,int level)
         {
