@@ -169,7 +169,7 @@ public class DBConnection
              left join parameters p3 on p3.name='language' and p3.parno=c.language
              left join person author on author.id=c.authorId 
              left join (select courseId,COUNT(*) number_of_purchase from acquisition group by courseId) a on a.courseId=c.id
-             where authorId=@authorId
+             where authorId=@Id
             and c.approved=1
             ";
             return dbConnection.Query<CourseResponse>(query, parmeters);
@@ -271,13 +271,33 @@ public class DBConnection
             return dbConnection.Execute(query, parameters);
         }
     }
-    public List<Document> GetCourseDocuments(string connectionstring,int courseId)
+    public List<Document> GetCoursesById(string connectionstring,int courseId)
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionstring))
         {
             var parameters = new { courseId };
             var query = @"select id,style type,document documentdata,lecture from document where courseId=@courseId";
             return dbConnection.Query<Document>(query, parameters).ToList();
+        }
+    }
+
+    public CourseResponse GetCourseById(string connectionstring, int courseId)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionstring))
+        {
+            var parameters = new { courseId };
+            var query = @"select  c.id,c.name,author.name author ,c.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
+ ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date , a.number_of_purchase
+ from course c 
+ left join parameters p1 on p1.name='categories' and p1.parno=c.categories
+ left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
+ left join parameters p3 on p3.name='language' and p3.parno=c.language
+ left join person author on author.id=c.authorId 
+ left join (select courseId,COUNT(*) number_of_purchase from acquisition group by courseId) a on a.courseId=c.id
+ where 
+ c.approved=1
+ and  c.id =@courseId";
+            return dbConnection.Query<CourseResponse>(query, parameters).FirstOrDefault();
         }
     }
 }

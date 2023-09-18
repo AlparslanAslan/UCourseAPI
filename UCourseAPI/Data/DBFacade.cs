@@ -127,7 +127,13 @@ namespace UCourseAPI.Data
         public List<Document> GetCourseDocuments(int courseId)
         {
            var dbm = new DBConnection();
-            return dbm.GetCourseDocuments(_connectionstring, courseId);
+            return dbm.GetCoursesById(_connectionstring, courseId);
+        }
+
+        public CourseResponse GetCoursesById(int courseId)
+        {
+            var dbm = new DBConnection();
+            return dbm.GetCourseById(_connectionstring, courseId);
         }
     }
 }

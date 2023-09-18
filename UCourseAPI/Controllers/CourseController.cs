@@ -11,6 +11,7 @@ using UCourseAPI.Models;
 using Serilog;
 using Microsoft.EntityFrameworkCore;
 using UCourseAPI.Repositories;
+using System.Data.Common;
 
 namespace UCourseAPI.Controllers
 {
@@ -32,19 +33,51 @@ namespace UCourseAPI.Controllers
         [HttpGet("getallcourses")]
         public IActionResult GetALlCourses()
         {
-            var result  = _courseRepo.GetAll();
-            Log.Information<List<CourseResponse>>("{@result}",result);
-            return Ok(result);
-
+            try
+            {
+                var result = _courseRepo.GetAll();
+                Log.Information<List<CourseResponse>>("{@result}", result);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return StatusCode(500, ex.Message);
+            }
         }
 
 
         [HttpGet("getcourses")]
         public IActionResult GetCourses(string? name,string? category,string? language,string? subcategory,int level)
         {
-            var result = _dbFacade.GetAllCourses(name, category, language, subcategory, level);
-            return Ok(result);
+            try
+            {
+                var result = _dbFacade.GetAllCourses(name, category, language, subcategory, level);
+                return Ok(result);
+
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return StatusCode(500, ex.Message);
+            }
         }
+        [HttpGet("getcoursebyid")]
+        public IActionResult GetCoursesById(int CourseId)
+        {
+            try
+            {
+                var result = _dbFacade.GetCoursesById(CourseId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+
+        }
+
 
 
         [HttpPost("InsertCourse")]
@@ -52,13 +85,11 @@ namespace UCourseAPI.Controllers
         public async Task<IActionResult> InsertCourseAsync([FromForm] CourseInsertRequest course)
         {
             byte[] fileData = null;
-
             using (var memoryStream = new MemoryStream())
             {
                 await course.Files.CopyToAsync(memoryStream);
                 fileData = memoryStream.ToArray();
             }
-
 
             if (!InputChecker.CourseInsertIsValid(course, out string errortext))
             {
@@ -166,8 +197,16 @@ namespace UCourseAPI.Controllers
                 ReviewText = request.ReviewText,
                 UserId = _user.Id                
             };
-            var result = _dbFacade.InsertReview(_user, review);
-            return result==1 ? Ok(result) : NoContent();
+            try
+            {
+                var result = _dbFacade.InsertReview(_user, review);
+                return result == 1 ? Ok(result) : NoContent();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return StatusCode(500, ex.Message);
+            }
         }
         
         
@@ -175,10 +214,19 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "Author")]
         public IActionResult GetCourseDetails(int courseId)
         {
-            var courseInfo = _dbFacade.GetCourseDetails(courseId);
-            var courseReviews = _dbFacade.GetCourseReviews(courseId);
-            courseInfo.Review = courseReviews;
-            return courseReviews.Count > 0 ? Ok(courseInfo): NotFound();    
+            try
+            {
+                var courseInfo = _dbFacade.GetCourseDetails(courseId);
+                var courseReviews = _dbFacade.GetCourseReviews(courseId);
+                if (courseInfo != null && courseReviews != null)
+                    courseInfo.Review = courseReviews;
+                return courseInfo != null ? Ok(courseInfo) : NotFound();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return StatusCode(500, ex.Message);
+            }
         }
         
         
@@ -189,15 +237,31 @@ namespace UCourseAPI.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var _user = IdentityMethods.GetCurrentUser(identity);
             score.UserId = _user.Id;
-            var result = _dbFacade.AddScore(score);
-            return Ok(result);
+            try
+            {
+                var result = _dbFacade.AddScore(score);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpPost("approve")]
         [Authorize(Roles = "Admin")]
         public IActionResult ApproveCourse(int courseId,bool approved)
         {
-            return _dbFacade.Approve(courseId, approved) == 1 ? Ok() : NoContent();
+            try
+            {
+                return _dbFacade.Approve(courseId, approved) == 1 ? Ok() : NoContent();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return StatusCode(500, ex.Message);
+            }
         }
     }
 }
