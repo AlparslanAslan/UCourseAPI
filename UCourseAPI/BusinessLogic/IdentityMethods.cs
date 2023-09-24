@@ -67,9 +67,7 @@ namespace UCourseAPI.Methods
                 var claims = identity.Claims;
                 return new DBFacade().GetUserInfo(claims?.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value);
             }
-            return null;
-
-            
+            return default(UserResponse);
         }
         public static IUser GetCurrentPerson(ClaimsIdentity identity)
         {

@@ -79,9 +79,8 @@ namespace UCourseAPI.Controllers
         }
 
 
-
         [HttpPost("InsertCourse")]
-        [Authorize(Roles = "Author")]
+      //  [Authorize(Roles = "Author")]
         public async Task<IActionResult> InsertCourseAsync([FromForm] CourseInsertRequest course)
         {
             byte[] fileData = null;
@@ -137,7 +136,7 @@ namespace UCourseAPI.Controllers
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
-            if (!InputChecker.CourseDeleteIsValid(courseid, user.Id, out string errortext))
+            if (!user.CourseDeleteIsValid(courseid, user.Id, out string errortext))
             {
                 return BadRequest(errortext);
             }

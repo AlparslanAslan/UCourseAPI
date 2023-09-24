@@ -85,7 +85,7 @@ namespace UCourseAPI.BusinessLogic
             }
 
         }
-        public static bool CourseDeleteIsValid(int CourseId, int userId, out string errormessage)
+        public static bool CourseDeleteIsValid(this UserResponse user ,int CourseId, int userId, out string errormessage)
         {
             if(!IsCourseBelongToAuthor(CourseId, userId))
             {

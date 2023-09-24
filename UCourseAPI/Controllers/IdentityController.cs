@@ -65,6 +65,7 @@ namespace UCourseAPI.Controllers
        
         
         [HttpGet("UserInfo")]
+        [Authorize(Roles = "User,Author")]
         public IActionResult GetUserInfo()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
