@@ -71,10 +71,19 @@ public class DBConnection
              if(@categoriesnumeric is not null or @languagenumeric is not null or @subcategoriesnumeric is not null)
              insert into course (name,authorId,price,categories,subcategories,level,description,language,date)
              values(@name,@authorId,@price,@categoriesnumeric,@subcategoriesnumeric,@level,@description,@languagenumeric,GETDATE())
-             insert into document values('PDF',@document,null,1,GETDATE())
+             insert into document values('PDF',@document,null,1,GETDATE(),1)
             
             ";
-            return dbConnection.Execute(query, course);
+            try
+            {
+                return dbConnection.Execute(query, course);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+                
+            }
+            return 0;
         }
     }
     public int UpdateCourse(string connectionString, CourseUpdateRequest course)
@@ -287,7 +296,7 @@ public class DBConnection
         {
             var parameters = new { courseId };
             var query = @"select  c.id,c.name,author.name author ,c.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
- ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date , a.number_of_purchase
+ ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.level levelInt,c.date , a.number_of_purchase
  from course c 
  left join parameters p1 on p1.name='categories' and p1.parno=c.categories
  left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
