@@ -171,7 +171,8 @@ public class DBConnection
             var query = @"
              
              select  c.id,c.name,author.name author ,c.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
-             ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date , a.number_of_purchase
+             ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date , a.number_of_purchase,
+             case c.approved when 1 then 'Approved' when 2 then 'Denied' else 'In Approval' end approved
              from course c 
              left join parameters p1 on p1.name='categories' and p1.parno=c.categories
              left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
@@ -179,7 +180,6 @@ public class DBConnection
              left join person author on author.id=c.authorId 
              left join (select courseId,COUNT(*) number_of_purchase from acquisition group by courseId) a on a.courseId=c.id
              where authorId=@Id
-            and c.approved=1
             ";
             return dbConnection.Query<CourseResponse>(query, parmeters);
         }        
@@ -307,6 +307,33 @@ public class DBConnection
  c.approved=1
  and  c.id =@courseId";
             return dbConnection.Query<CourseResponse>(query, parameters).FirstOrDefault();
+        }
+    }
+
+    public int AddReview(string connectionstring, ScoreReview review)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionstring))
+        {
+            var query = @"
+                insert into review(userId,review,courseId,date)
+                values(@UserId,@ReviewText,@CourseId,GETDATE())
+
+                insert into star(userId, courseId, star)
+                values(@UserId, @CourseId, @score);
+                ";
+            return dbConnection.Execute(query, review);
+        }
+
+    }
+
+    internal List<ReviewResponse> GetReviews(string connectionstring, int courseId)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionstring))
+        {
+            var parameter = new { courseId };
+            var query = @"select review from review where courseId=@courseId";
+               
+            return dbConnection.Query<ReviewResponse>(query, parameter).ToList();
         }
     }
 }

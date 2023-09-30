@@ -106,7 +106,7 @@ namespace UCourseAPI.Controllers
                 Language = course.Language,
                 Level = course.Level,
                 Price = course.Price,
-                //AuthorId = user.Id,
+                AuthorId = user.Id,
                 Document = fileData
             };
             
@@ -114,7 +114,7 @@ namespace UCourseAPI.Controllers
         }
         
         
-        [HttpPut("updatecourse")]
+        [HttpPost("updatecourse")]
         [Authorize(Roles = "Author")]
         public IActionResult UpdateCourse(CourseUpdateRequest course)
         {
@@ -128,8 +128,27 @@ namespace UCourseAPI.Controllers
             return _dbFacade.UpdateCourse(course)==1 ? Ok() : NoContent();
             
         }
-        
-        
+
+        [HttpPost("addreview")]
+        //[Authorize(Roles = "Author")]
+        public IActionResult AddReview(ReviewRequest review)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var user = IdentityMethods.GetCurrentUser(identity);
+            var _review = new ScoreReview()
+            {
+                CourseId = review.CourseId,
+                ReviewText = review.ReviewText,
+                UserId = user.Id,
+                Id = 0,
+                Score = review.Score
+            };
+
+            return _dbFacade.AddReview(_review) == 1 ? Ok() : NoContent();
+
+        }
+
+
         [HttpDelete("deletecourse")]
         [Authorize(Roles = "Author")]
         public IActionResult DeleteCourse(int courseid)
@@ -168,7 +187,7 @@ namespace UCourseAPI.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentPerson(identity);
             var result = user.GetCourses();
-            return result.IsNullOrEmpty() == true ? NotFound() : Ok(result);
+            return result.IsNullOrEmpty() ? NotFound() : Ok(result);
         }
 
         [HttpGet("document")]
@@ -255,6 +274,21 @@ namespace UCourseAPI.Controllers
             try
             {
                 return _dbFacade.Approve(courseId, approved) == 1 ? Ok() : NoContent();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("getreviews")]
+       // [Authorize(Roles = "Admin")]
+        public IActionResult GetReviews(int courseId)
+        {
+            try
+            {
+                return _dbFacade.GetReviews(courseId) != null ? Ok(_dbFacade.GetReviews(courseId)) : NoContent();
             }
             catch (Exception ex)
             {

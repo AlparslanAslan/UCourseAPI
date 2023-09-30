@@ -63,11 +63,7 @@ namespace UCourseAPI.BusinessLogic
                 errormessage = "Author can not update the course that doesn't belong to him!";
                 return false;
             }
-            else if (IsAuthorHasCourseSameName(request.Name, userId))
-            {
-                errormessage = String.Concat("There is already a course named ", request.Name);
-                return false;
-            }
+          
             else if (String.IsNullOrEmpty(request.Name))
             {
                 errormessage = "Course Name cannot be empty!";

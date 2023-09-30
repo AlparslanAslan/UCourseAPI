@@ -135,5 +135,17 @@ namespace UCourseAPI.Data
             var dbm = new DBConnection();
             return dbm.GetCourseById(_connectionstring, courseId);
         }
+
+        public int AddReview(ScoreReview review)
+        {
+            var dbm = new DBConnection();
+            return dbm.AddReview(_connectionstring, review);
+        }
+
+        internal List<ReviewResponse> GetReviews(int courseId)
+        {
+            var dbm = new DBConnection();
+            return dbm.GetReviews(_connectionstring, courseId);
+        }
     }
 }

@@ -29,6 +29,7 @@ namespace UCourseAPI.Repositories
              left join parameters p2 on p2.name='subcategories' and p2.parno=subcategories
              left join parameters p3 on p3.name='language' and p3.parno=language
              left join (select courseId,avg(star) avgscore from star group by courseId) s on s.courseId= c.id
+where c.approved=1
             
             ";
                 List<CourseResponse> courses = dbConnection.Query<CourseResponse>(query).AsList();

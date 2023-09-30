@@ -16,5 +16,6 @@ namespace UCourseAPI.Models
         //public DateTime Date { get; set; }
         // public List<string?> Review { get; set; }
         public float Score { get; set; }
+        public string? Approved { get; set; }
     }
 }
