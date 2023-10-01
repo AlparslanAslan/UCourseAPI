@@ -304,8 +304,7 @@ public class DBConnection
  left join person author on author.id=c.authorId 
  left join (select courseId,COUNT(*) number_of_purchase from acquisition group by courseId) a on a.courseId=c.id
  where 
- c.approved=1
- and  c.id =@courseId";
+  c.id =@courseId";
             return dbConnection.Query<CourseResponse>(query, parameters).FirstOrDefault();
         }
     }

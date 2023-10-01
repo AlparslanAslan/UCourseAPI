@@ -80,7 +80,7 @@ namespace UCourseAPI.Controllers
 
 
         [HttpPost("InsertCourse")]
-      //  [Authorize(Roles = "Author")]
+        [Authorize(Roles = "Author")]
         public async Task<IActionResult> InsertCourseAsync([FromForm] CourseInsertRequest course)
         {
             byte[] fileData = null;
