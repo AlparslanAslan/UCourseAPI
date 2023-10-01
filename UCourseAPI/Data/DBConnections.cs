@@ -275,8 +275,8 @@ public class DBConnection
     {
         using (IDbConnection dbConnection = new SqlConnection(connectionstring))
         {
-            var parameters = new { courseId, approved = approved ? 1 : 0 };
-            var query = @"update course set approved=@approved where corseId=@courseId";
+            var parameters = new { courseId, approved = approved ? 1 : 2 };
+            var query = @"update course set approved=@approved where id=@courseId";
             return dbConnection.Execute(query, parameters);
         }
     }

@@ -22,7 +22,7 @@ namespace UCourseAPI.Controllers
         private readonly ILogger<CourseController> _logger;
         private readonly DBFacade _dbFacade;
         private readonly ICourseRepo _courseRepo;
-        public CourseController(ILogger<CourseController> logger, DBFacade dbFacade,ICourseRepo courseRepo)
+        public CourseController(ILogger<CourseController> logger, DBFacade dbFacade, ICourseRepo courseRepo)
         {
             _courseRepo = courseRepo;
             _logger = logger;
@@ -48,7 +48,7 @@ namespace UCourseAPI.Controllers
 
 
         [HttpGet("getcourses")]
-        public IActionResult GetCourses(string? name,string? category,string? language,string? subcategory,int level)
+        public IActionResult GetCourses(string? name, string? category, string? language, string? subcategory, int level)
         {
             try
             {
@@ -109,11 +109,11 @@ namespace UCourseAPI.Controllers
                 AuthorId = user.Id,
                 Document = fileData
             };
-            
+
             return _dbFacade.InsertCourse(_course) == 1 ? Ok() : NoContent();
         }
-        
-        
+
+
         [HttpPost("updatecourse")]
         [Authorize(Roles = "Author")]
         public IActionResult UpdateCourse(CourseUpdateRequest course)
@@ -121,12 +121,12 @@ namespace UCourseAPI.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentUser(identity);
 
-            if (!InputChecker.CourseUpdateIsValid(course,user.Id,out string errortext))
+            if (!InputChecker.CourseUpdateIsValid(course, user.Id, out string errortext))
             {
                 return BadRequest(errortext);
             }
-            return _dbFacade.UpdateCourse(course)==1 ? Ok() : NoContent();
-            
+            return _dbFacade.UpdateCourse(course) == 1 ? Ok() : NoContent();
+
         }
 
         [HttpPost("addreview")]
@@ -159,9 +159,9 @@ namespace UCourseAPI.Controllers
             {
                 return BadRequest(errortext);
             }
-            return _dbFacade.DeleteCourse(courseid) == 1 ? Ok() : NoContent(); 
+            return _dbFacade.DeleteCourse(courseid) == 1 ? Ok() : NoContent();
         }
-        
+
 
         [HttpPost("purchase")]
         [Authorize(Roles = "User")]
@@ -175,11 +175,11 @@ namespace UCourseAPI.Controllers
             {
                 return BadRequest(errormessage);
             }
-           
-            return _dbFacade.PurchaseCourse(CourseId, user) == 1 ? Ok() : NoContent(); 
+
+            return _dbFacade.PurchaseCourse(CourseId, user) == 1 ? Ok() : NoContent();
         }
-        
-        
+
+
         [HttpGet("getusercourses")]
         [Authorize(Roles = "User,Author")]
         public IActionResult GetUserCourses()
@@ -197,7 +197,7 @@ namespace UCourseAPI.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var user = IdentityMethods.GetCurrentPerson(identity);
             List<Document> documents = new List<Document>();
-            if(InputChecker.IsAlreadyPurchased(user.Id, courseId, out string message))
+            if (InputChecker.IsAlreadyPurchased(user.Id, courseId, out string message))
                 documents = _dbFacade.GetCourseDocuments(courseId);
             return documents.IsNullOrEmpty() == true ? NotFound() : Ok(documents);
         }
@@ -213,7 +213,7 @@ namespace UCourseAPI.Controllers
             {
                 CourseId = request.CourseId,
                 ReviewText = request.ReviewText,
-                UserId = _user.Id                
+                UserId = _user.Id
             };
             try
             {
@@ -226,8 +226,8 @@ namespace UCourseAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-        
-        
+
+
         [HttpGet("coursedetails")]
         [Authorize(Roles = "Author")]
         public IActionResult GetCourseDetails(int courseId)
@@ -246,8 +246,8 @@ namespace UCourseAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-        
-        
+
+
         [HttpPost("addscore")]
         [Authorize(Roles = "User")]
         public IActionResult AddScore(Score score)
@@ -267,23 +267,23 @@ namespace UCourseAPI.Controllers
             }
         }
 
-        [HttpPost("approve")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult ApproveCourse(int courseId,bool approved)
-        {
-            try
-            {
-                return _dbFacade.Approve(courseId, approved) == 1 ? Ok() : NoContent();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex.Message);
-                return StatusCode(500, ex.Message);
-            }
-        }
+        //[HttpPost("approve")]
+        //[Authorize(Roles = "Admin")]
+        //public IActionResult ApproveCourse(int courseId, bool approved)
+        //{
+        //    try
+        //    {
+        //        return _dbFacade.Approve(courseId, approved) == 1 ? Ok() : NoContent();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Log.Error(ex.Message);
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
 
         [HttpGet("getreviews")]
-       // [Authorize(Roles = "Admin")]
+        // [Authorize(Roles = "Admin")]
         public IActionResult GetReviews(int courseId)
         {
             try
@@ -295,6 +295,23 @@ namespace UCourseAPI.Controllers
                 Log.Error(ex.Message);
                 return StatusCode(500, ex.Message);
             }
+        }
+
+        [HttpPost("approve")]
+        public IActionResult Approve(Approve approve)
+        {
+            try
+            {
+                return _dbFacade.Approve(approve.CourseId, approve.Approved) == 1 ? Ok() : NotFound();
+
+            }
+            catch (Exception ex)
+            {
+
+                System.Diagnostics.Trace.WriteLine(ex.Message);
+                return BadRequest(ex.Message);
+            }
+            
         }
     }
 }
