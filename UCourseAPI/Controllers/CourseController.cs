@@ -313,5 +313,22 @@ namespace UCourseAPI.Controllers
             }
             
         }
+
+        [HttpGet("inapproval")]
+        public IActionResult InApproval()
+        {
+            try
+            {
+                return Ok(_dbFacade.InApproval());
+
+            }
+            catch (Exception ex)
+            {
+
+                System.Diagnostics.Trace.WriteLine(ex.Message);
+                return BadRequest(ex.Message);
+            }
+
+        }
     }
 }

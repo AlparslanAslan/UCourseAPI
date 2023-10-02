@@ -26,7 +26,7 @@ namespace UCourseAPI.Controllers
         {
             if(!InputChecker.IsUserRegisterInputValid(dtouser, out string errormessage))
             {
-                return NotFound(errormessage);
+                return BadRequest(errormessage);
             }
             IdentityMethods.CreatePasswordHash(dtouser.Password,out byte[] passwordHash,out byte[] passwordSalt);
             var _user = new UserResponse()
@@ -38,8 +38,16 @@ namespace UCourseAPI.Controllers
                 PasswordSalt = passwordSalt,
                 Email = dtouser.Email
             };
-            return Ok(_dBFacade.UserRegister(_user));
+            try
+            {
+               _dBFacade.UserRegister(_user);
+                return Ok(IdentityMethods.CreateToken(_user, _configuration));
 
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
         
         

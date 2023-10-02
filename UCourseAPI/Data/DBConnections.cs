@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using WebApi.Data;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using UCourseAPI.BusinessLogic;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System.Reflection.Metadata;
+using Document = UCourseAPI.Models.Document;
 
 namespace UCourseAPI.Data;
 public class DBConnection 
@@ -34,7 +37,7 @@ public class DBConnection
              c.id,c.name,c.price,p1.explanation categories,p2.explanation subcategories,
              
              case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,
-             c.description,p3.explanation language, c.date,s.avgscore Score, pa.name author
+             c.description,p3.explanation language, c.date,s.avgscore Score, pa.name author,c.date
              
              from course c
              left join person pa on pa.id =c.authorId 
@@ -150,10 +153,13 @@ public class DBConnection
             string query = @"
 
             
-            select c.id,c.name,a.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
-            ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level
+           select c.id,c.name,a.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
+            ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,p.name Author
+            ,c.date,star.score
             from acquisition a
-            left join course c on c.id= a.courseId 
+            inner  join course c on c.id= a.courseId
+			inner join person p on p.id = c.authorId
+            LEFT join (select courseId,AVG(star) score from star group by courseId) star on star.courseId= c.id
              left join parameters p1 on p1.name='categories' and p1.parno=c.categories
              left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
              left join parameters p3 on p3.name='language' and p3.parno=c.language
@@ -171,7 +177,7 @@ public class DBConnection
             var query = @"
              
              select  c.id,c.name,author.name author ,c.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
-             ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date , a.number_of_purchase,
+             ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.date , a.number_of_purchase NumberOfPurchase,
              case c.approved when 1 then 'Approved' when 2 then 'Denied' else 'In Approval' end approved
              from course c 
              left join parameters p1 on p1.name='categories' and p1.parno=c.categories
@@ -333,6 +339,31 @@ public class DBConnection
             var query = @"select review from review where courseId=@courseId";
                
             return dbConnection.Query<ReviewResponse>(query, parameter).ToList();
+        }
+    }
+
+    internal List<CourseResponse> InApproval(string connectionstring)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionstring))
+        {
+
+
+            var query = @" select 
+ c.id,c.name,c.price,p1.explanation categories,p2.explanation subcategories,
+ 
+ case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,
+ c.description,p3.explanation language, c.date,s.avgscore Score, pa.name author
+ 
+ from course c
+ left join person pa on pa.id =c.authorId 
+ left join parameters p1 on p1.name='categories' and p1.parno=categories
+ left join parameters p2 on p2.name='subcategories' and p2.parno=subcategories
+ left join parameters p3 on p3.name='language' and p3.parno=language
+ left join (select courseId,avg(star) avgscore from star group by courseId) s on s.courseId= c.id
+ where 
+ c.approved=0 or approved is null";
+        return dbConnection.Query<CourseResponse>(query).ToList();
+
         }
     }
 }

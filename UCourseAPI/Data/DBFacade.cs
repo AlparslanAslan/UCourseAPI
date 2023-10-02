@@ -147,5 +147,12 @@ namespace UCourseAPI.Data
             var dbm = new DBConnection();
             return dbm.GetReviews(_connectionstring, courseId);
         }
+
+        internal List<CourseResponse> InApproval()
+        {
+            var dbm = new DBConnection();
+            return dbm.InApproval(_connectionstring);
+
+        }
     }
 }
