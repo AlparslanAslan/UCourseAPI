@@ -366,4 +366,28 @@ public class DBConnection
 
         }
     }
+
+    internal int ChangeRole(string connectionstring, RoleChangeRequest request)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionstring))
+        {
+            var query = @"
+update person set role=@Role where id=@UserId
+";
+             return dbConnection.Execute(query, request);
+        }
+    }
+
+    internal List<UserRoleResponse> GetUserRoles(string connectionstring)
+    {
+        using (IDbConnection dbConnection = new SqlConnection(connectionstring))
+        {
+            var query = @"
+select id  userId,name,email,role from person
+";
+           return dbConnection.Query<UserRoleResponse>(query).ToList();
+        }
+
+
+    }
 }

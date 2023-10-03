@@ -311,7 +311,7 @@ namespace UCourseAPI.Controllers
                 System.Diagnostics.Trace.WriteLine(ex.Message);
                 return BadRequest(ex.Message);
             }
-            
+
         }
 
         [HttpGet("inapproval")]
@@ -329,6 +329,31 @@ namespace UCourseAPI.Controllers
                 return BadRequest(ex.Message);
             }
 
+        }
+
+        [HttpPost("rolechange")]
+        [Authorize(Roles ="Admin")]
+        
+        public IActionResult RoleChange(RoleChangeRequest request)
+        {
+            try
+            {
+                _dbFacade.ChangeRole(request);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+               
+            }
+        }
+
+        [HttpGet("getuserrole")]
+        [Authorize(Roles ="Admin")]
+        public IActionResult GetUserRole()
+        {
+           var result =  _dbFacade.GetUserRoles();
+            return Ok(result);
         }
     }
 }

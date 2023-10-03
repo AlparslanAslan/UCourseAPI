@@ -1,4 +1,5 @@
-﻿using UCourseAPI.BusinessLogic;
+﻿using Azure.Core;
+using UCourseAPI.BusinessLogic;
 using UCourseAPI.Models;
 using WebApi.Data;
 
@@ -153,6 +154,18 @@ namespace UCourseAPI.Data
             var dbm = new DBConnection();
             return dbm.InApproval(_connectionstring);
 
+        }
+
+        internal int ChangeRole(RoleChangeRequest request)
+        {
+            var dbm = new DBConnection();
+            return dbm.ChangeRole(_connectionstring,request);
+        }
+
+        internal List<UserRoleResponse> GetUserRoles()
+        {
+            var dbm = new DBConnection();
+            return dbm.GetUserRoles(_connectionstring);
         }
     }
 }
