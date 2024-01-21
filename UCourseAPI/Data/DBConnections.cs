@@ -336,7 +336,8 @@ public class DBConnection
         using (IDbConnection dbConnection = new SqlConnection(connectionstring))
         {
             var parameter = new { courseId };
-            var query = @"select review from review where courseId=@courseId";
+            var query = @"  select p.name UserName,review,convert(varchar,r.date,103) date from review  r
+                        inner join person p on p.id=r.userId where courseId=@courseId";
                
             return dbConnection.Query<ReviewResponse>(query, parameter).ToList();
         }

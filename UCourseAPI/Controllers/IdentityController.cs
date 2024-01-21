@@ -73,11 +73,11 @@ namespace UCourseAPI.Controllers
        
         
         [HttpGet("UserInfo")]
-        [Authorize(Roles = "User,Author")]
+        [Authorize(Roles = "User,Author,Admin")]
         public IActionResult GetUserInfo()
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var user = IdentityMethods.GetCurrentUser(identity);
+
+            var user = IdentityMethods.GetCurrentUser(HttpContext);
             return Ok(_dBFacade.GetUserInfo(user.Email));
         }
 
@@ -85,8 +85,8 @@ namespace UCourseAPI.Controllers
         [HttpPost("UpdateUserInfo")]
         public IActionResult UpdateUserInfo(UserInfoRequest dtouser)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var _user = IdentityMethods.GetCurrentUser(identity);
+
+            var _user = IdentityMethods.GetCurrentUser(HttpContext);
             if(!InputChecker.IsUserInfoUpdateValid(dtouser,_user.Role,out string errormessage))
             {
                 return BadRequest(errormessage);
@@ -106,8 +106,8 @@ namespace UCourseAPI.Controllers
         [HttpPost("updateuserpassword")]
         public IActionResult UpdateUserPassword(UserPasswordRequest userPassword)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var user = IdentityMethods.GetCurrentUser(identity);
+
+            var user = IdentityMethods.GetCurrentUser(HttpContext);
             var dtoUser = new LoginUser
             {
                 Email = user.Email,

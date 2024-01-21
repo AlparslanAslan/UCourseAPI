@@ -83,20 +83,13 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "Author")]
         public async Task<IActionResult> InsertCourseAsync([FromForm] CourseInsertRequest course)
         {
-            byte[] fileData = null;
-            using (var memoryStream = new MemoryStream())
-            {
-                await course.Files.CopyToAsync(memoryStream);
-                fileData = memoryStream.ToArray();
-            }
-
+            // VALIDATION CHECK
             if (!InputChecker.CourseInsertIsValid(course, out string errortext))
             {
                 return BadRequest(errortext);
             }
-
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var user = IdentityMethods.GetCurrentUser(identity);
+            
+            //CREATE INSTANCE
             var _course = new CourseDbParameters()
             {
                 Name = course.Name,
@@ -106,10 +99,11 @@ namespace UCourseAPI.Controllers
                 Language = course.Language,
                 Level = course.Level,
                 Price = course.Price,
-                AuthorId = user.Id,
-                Document = fileData
+                AuthorId = IdentityMethods.GetCurrentUser(HttpContext).Id,
+                Document = IdentityMethods.GetFileBytes(course.Files).Result
             };
 
+            //INSERT TO DB
             return _dbFacade.InsertCourse(_course) == 1 ? Ok() : NoContent();
         }
 
@@ -118,8 +112,7 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "Author")]
         public IActionResult UpdateCourse(CourseUpdateRequest course)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var user = IdentityMethods.GetCurrentUser(identity);
+            var user = IdentityMethods.GetCurrentUser(HttpContext);
 
             if (!InputChecker.CourseUpdateIsValid(course, user.Id, out string errortext))
             {
@@ -133,8 +126,8 @@ namespace UCourseAPI.Controllers
         //[Authorize(Roles = "Author")]
         public IActionResult AddReview(ReviewRequest review)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var user = IdentityMethods.GetCurrentUser(identity);
+
+            var user = IdentityMethods.GetCurrentUser(HttpContext);
             var _review = new ScoreReview()
             {
                 CourseId = review.CourseId,
@@ -153,8 +146,8 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "Author")]
         public IActionResult DeleteCourse(int courseid)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var user = IdentityMethods.GetCurrentUser(identity);
+
+            var user = IdentityMethods.GetCurrentUser(HttpContext);
             if (!user.CourseDeleteIsValid(courseid, user.Id, out string errortext))
             {
                 return BadRequest(errortext);
@@ -168,7 +161,7 @@ namespace UCourseAPI.Controllers
         public IActionResult PurchaseCourse(int CourseId)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var user = IdentityMethods.GetCurrentUser(identity);
+            var user = IdentityMethods.GetCurrentUser(HttpContext);
 
             var isPurchased = InputChecker.IsAlreadyPurchased(user.Id, CourseId, out string errormessage);
             if (isPurchased)
@@ -184,21 +177,23 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "User,Author")]
         public IActionResult GetUserCourses()
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var user = IdentityMethods.GetCurrentPerson(identity);
+
+            var user = IdentityMethods.GetCurrentPerson(HttpContext);
             var result = user.GetCourses();
-            return result.IsNullOrEmpty() ? NotFound() : Ok(result);
+            return result.IsNullOrEmpty() ? NoContent() : Ok(result);
         }
 
         [HttpGet("document")]
         [Authorize(Roles = "User")]
         public IActionResult GetUserCourseDocument(int courseId)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var user = IdentityMethods.GetCurrentPerson(identity);
+            var user = IdentityMethods.GetCurrentPerson(HttpContext);
+            
             List<Document> documents = new List<Document>();
+            
             if (InputChecker.IsAlreadyPurchased(user.Id, courseId, out string message))
                 documents = _dbFacade.GetCourseDocuments(courseId);
+            
             return documents.IsNullOrEmpty() == true ? NotFound() : Ok(documents);
         }
 
@@ -207,8 +202,8 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "User")]
         public IActionResult InsertReview(ReviewInsertRequest request)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var _user = IdentityMethods.GetCurrentUser(identity);
+
+            var _user = IdentityMethods.GetCurrentUser(HttpContext);
             var review = new Review()
             {
                 CourseId = request.CourseId,
@@ -226,7 +221,6 @@ namespace UCourseAPI.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
 
         [HttpGet("coursedetails")]
         [Authorize(Roles = "Author")]
@@ -252,8 +246,8 @@ namespace UCourseAPI.Controllers
         [Authorize(Roles = "User")]
         public IActionResult AddScore(Score score)
         {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var _user = IdentityMethods.GetCurrentUser(identity);
+
+            var _user = IdentityMethods.GetCurrentUser(HttpContext);
             score.UserId = _user.Id;
             try
             {

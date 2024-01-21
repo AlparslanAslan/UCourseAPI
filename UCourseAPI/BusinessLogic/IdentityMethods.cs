@@ -20,7 +20,7 @@ namespace UCourseAPI.Methods
                 passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
             }
         }
-        public static bool IsPasswordCorrect(DBFacade dBFacade,LoginUser user, out byte[] passwordHash, out byte[] passwordSalt)
+        public static bool IsPasswordCorrect(DBFacade dBFacade, LoginUser user, out byte[] passwordHash, out byte[] passwordSalt)
         {
             var _user = dBFacade.GetUserInfo(user.Email);
             if (_user == null)
@@ -36,7 +36,7 @@ namespace UCourseAPI.Methods
             }
             return passwordHash.SequenceEqual(_user.PasswordHash);
         }
-        public static string CreateToken(UserResponse user,IConfiguration configuration)
+        public static string CreateToken(UserResponse user, IConfiguration configuration)
         {
             var claims = new List<Claim>
             {
@@ -57,11 +57,12 @@ namespace UCourseAPI.Methods
                 );
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
             return jwt;
-            
+
         }
-        public static UserResponse GetCurrentUser(ClaimsIdentity identity)
+        public static UserResponse GetCurrentUser(HttpContext HttpContext)
         {
-            
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+
             if (identity != null)
             {
                 var claims = identity.Claims;
@@ -69,8 +70,9 @@ namespace UCourseAPI.Methods
             }
             return default(UserResponse);
         }
-        public static IUser GetCurrentPerson(ClaimsIdentity identity)
+        public static IUser GetCurrentPerson(HttpContext HttpContext)
         {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
 
             if (identity != null)
             {
@@ -90,6 +92,14 @@ namespace UCourseAPI.Methods
 
         }
 
-        
+        public async static Task<byte[]> GetFileBytes(IFormFile formFile)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                await formFile.CopyToAsync(memoryStream);
+                return  memoryStream.ToArray();
+            }
+        } 
+
     }
 }
