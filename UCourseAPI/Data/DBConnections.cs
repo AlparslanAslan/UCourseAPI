@@ -302,13 +302,14 @@ public class DBConnection
         {
             var parameters = new { courseId };
             var query = @"select  c.id,c.name,author.name author ,c.price,c.description,p1.explanation categories , p2.explanation subcategories, p3.explanation language
- ,case c.level when 1 then 'Begginer' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.level levelInt,c.date , a.number_of_purchase
+ ,case c.level when 1 then 'Beginner' when 2 then 'Intermediate' when 3 then 'Advanced' end level,c.level levelInt,c.date , a.number_of_purchase,star.score
  from course c 
  left join parameters p1 on p1.name='categories' and p1.parno=c.categories
  left join parameters p2 on p2.name='subcategories' and p2.parno=c.subcategories
  left join parameters p3 on p3.name='language' and p3.parno=c.language
  left join person author on author.id=c.authorId 
  left join (select courseId,COUNT(*) number_of_purchase from acquisition group by courseId) a on a.courseId=c.id
+ left join (select s.courseId,avg(star) score from star s group by s.courseId) star on star.courseId=c.id
  where 
   c.id =@courseId";
             return dbConnection.Query<CourseResponse>(query, parameters).FirstOrDefault();
